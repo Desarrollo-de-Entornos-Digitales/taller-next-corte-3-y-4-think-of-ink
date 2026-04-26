@@ -1,10 +1,33 @@
 'use client';
 
 import Link from 'next/link';
-
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { CustomButton } from '../components/buttons';
+import { loginUser } from './login.service';
 
 export default function Login() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const router = useRouter();
+
+    const handleLogin = async (e: any) => {
+        e.preventDefault();
+
+        try {
+            const data = await loginUser(email, password);
+
+            // guardar token
+            localStorage.setItem('token', data.access_token);
+
+            // redirigir
+            router.push('/');
+
+        } catch (error: any) {
+            alert(error.message || 'Error al iniciar sesión');
+        }
+    };
+
     return (
         <main className="bg-base-200 min-h-screen flex items-center justify-center p-4">
             <div className="card bg-base-100 w-full max-w-md shadow-xl border border-slate-200 p-8">
@@ -13,7 +36,7 @@ export default function Login() {
                     <p className="text-slate-500 mt-2 text-sm">Inicia sesión en tu red de tatuajes</p>
                 </div>
 
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleLogin}>
                     <div className="form-control">
                         <label className="label">
                             <span className="label-text font-semibold">Email</span>
@@ -22,6 +45,8 @@ export default function Login() {
                             type="email"
                             placeholder="nombre@ejemplo.com"
                             className="input input-bordered focus:input-primary"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
 
@@ -33,6 +58,8 @@ export default function Login() {
                             type="password"
                             placeholder="••••••••"
                             className="input input-bordered focus:input-primary"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
 
