@@ -8,8 +8,6 @@ import { AuthForm } from '../components/FormField';
 
 import { loginUser } from './login.service';
 
-// Asumiendo que mantienes tu servicio de login
-
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -18,18 +16,22 @@ export default function Login() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            // Lógica de autenticación existente
+            // Se pasan las variables de estado directamente al servicio
             const data = await loginUser(email, password);
+
             if (data?.access_token) {
+                // Guardamos el token para las peticiones protegidas de Think of ink
                 localStorage.setItem('token', data.access_token);
+                // Redirección inmediata al feed
                 router.push('/');
             }
         } catch (error: any) {
-            alert('Credenciales inválidas');
+            // Mejora: Capturamos el mensaje exacto del backend si existe
+            const errorMessage = error.response?.data?.message || 'Credenciales inválidas. Inténtalo de nuevo.';
+            alert(errorMessage);
         }
     };
 
-    // Definición de campos con el tipado explícito para evitar errores de e.target
     const loginFields = [
         {
             label: 'Correo electrónico',
@@ -51,7 +53,7 @@ export default function Login() {
 
     return (
         <main className="min-h-screen flex flex-col md:flex-row bg-white text-black font-sans">
-            {/* Sección Lateral Informativa - Manteniendo el diseño original */}
+            {/* Sección Lateral: Se mantiene el eslogan "Conecta ideas, crea arte." */}
             <section className="md:w-[35%] bg-[#F2F2F2] p-10 md:p-16 flex flex-col justify-between relative border-r border-gray-100">
                 <div className="text-xl font-black tracking-tighter uppercase">Think of ink</div>
 
@@ -66,9 +68,7 @@ export default function Login() {
                 </div>
             </section>
 
-            {/* Sección del Formulario */}
             <section className="flex-1 flex flex-col p-10 md:p-20 relative justify-center">
-                {/* Link de navegación superior */}
                 <div className="absolute top-12 right-12 text-[11px] font-black uppercase tracking-widest">
                     ¿No tienes cuenta?
                     <Link
