@@ -1,32 +1,27 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 import { AuthForm } from '../components/FormField';
-
 import { loginUser } from './login.service';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const router = useRouter();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+
         try {
-            // Se pasan las variables de estado directamente al servicio
             const data = await loginUser(email, password);
 
             if (data?.access_token) {
-                // Guardamos el token para las peticiones protegidas de Think of ink
                 localStorage.setItem('token', data.access_token);
-                // Redirección inmediata al feed
-                router.push('/');
+
+               window.location.href = '/feed';
             }
         } catch (error: any) {
-            // Mejora: Capturamos el mensaje exacto del backend si existe
             const errorMessage = error.response?.data?.message || 'Credenciales inválidas. Inténtalo de nuevo.';
             alert(errorMessage);
         }
@@ -53,7 +48,6 @@ export default function Login() {
 
     return (
         <main className="min-h-screen flex flex-col md:flex-row bg-white text-black font-sans">
-            {/* Sección Lateral: Se mantiene el eslogan "Conecta ideas, crea arte." */}
             <section className="md:w-[35%] bg-[#F2F2F2] p-10 md:p-16 flex flex-col justify-between relative border-r border-gray-100">
                 <div className="text-xl font-black tracking-tighter uppercase">Think of ink</div>
 
@@ -61,6 +55,7 @@ export default function Login() {
                     <h1 className="text-6xl font-black leading-[1] mb-8 uppercase tracking-tighter">
                         Conecta ideas, crea arte.
                     </h1>
+
                     <p className="text-[15px] font-medium leading-relaxed text-black/80">
                         La red social para amantes del tatuaje. Encuentra inspiración, comparte tu talento y conecta con
                         estudios y clientes.

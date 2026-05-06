@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/auth';
+const API_URL = 'http://localhost:3002/auth';
 
 type RegisterResponse = {
     id: number;
@@ -8,11 +8,23 @@ type RegisterResponse = {
     email: string;
 };
 
-export const registerUser = async (username: string, email: string, password: string): Promise<RegisterResponse> => {
+interface RegisterData {
+    role?: string;
+    fullName?: string;
+    location?: string;
+}
+
+export const registerUser = async (
+    username: string,
+    email: string,
+    password: string,
+    additionalData?: RegisterData
+): Promise<RegisterResponse> => {
     const response = await axios.post<RegisterResponse>(`${API_URL}/register`, {
         username,
         email,
         password,
+        ...additionalData,
     });
 
     return response.data;

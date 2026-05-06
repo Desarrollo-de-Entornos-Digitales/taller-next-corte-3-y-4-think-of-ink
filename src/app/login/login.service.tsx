@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/auth';
+const API_URL = 'http://localhost:3002/auth';
 
 type LoginResponse = {
     access_token: string;
