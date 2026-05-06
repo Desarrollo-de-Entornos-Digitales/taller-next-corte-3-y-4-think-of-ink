@@ -16,9 +16,12 @@ export const Navbar = () => {
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 h-20">
             <div className="h-full px-8 flex items-center justify-between">
-                <Link href="/feed" className="text-lg font-black tracking-tight">
-                    Think of Ink
-                </Link>
+                <div>
+                    <Link href="/feed" className="text-lg font-black tracking-tight block">
+                        Think of Ink
+                    </Link>
+                    <p className="text-xs text-gray-500 font-medium">Conecta ideas, crea arte.</p>
+                </div>
 
                 <div className="flex items-center gap-8">
                     <Link href="/feed" className="text-sm font-bold text-gray-600 hover:text-black">
@@ -37,7 +40,7 @@ export const Navbar = () => {
                         </button>
 
                         {showDropdown && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-2">
+                            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
                                 <Link
                                     href="#"
                                     className="block px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50"

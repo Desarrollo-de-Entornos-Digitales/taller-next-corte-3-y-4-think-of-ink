@@ -52,7 +52,7 @@ export default function Feed() {
 
                 const data = await response.json();
 
-                // Manejar respuesta - puede ser array u objeto
+                // Manejar respuesta - puede ser array o objeto
                 const postsArray = Array.isArray(data) ? data : data.data ? data.data : [];
 
                 const mappedData = postsArray.map((post: any) => ({
@@ -69,7 +69,7 @@ export default function Feed() {
                 setInfoData(mappedData);
             } catch (error) {
                 console.error('Error obteniendo posts:', error);
-                setInfoData([]);
+                setInfoData([]); // Asegurar array vacío en error
             } finally {
                 setLoading(false);
             }
@@ -128,6 +128,7 @@ export default function Feed() {
 
             if (response.ok) {
                 alert('Publicación creada con éxito!');
+                // Reset form
                 setTitle('');
                 setDescription('');
                 setCategory('');
@@ -135,6 +136,7 @@ export default function Feed() {
                 setImages([]);
                 setPostType('Diseño');
                 setShowNewPostModal(false);
+                // Refresh posts
                 window.location.reload();
             } else {
                 alert('Error al crear la publicación');
@@ -468,7 +470,7 @@ export default function Feed() {
 
                                             <button className="flex-1 flex justify-center py-2">
                                                 <Bookmark size={18} strokeWidth={1.5} />
-                                             </button>
+                                                </button>
                                         </div>
                                     </div>
                                 </div>
