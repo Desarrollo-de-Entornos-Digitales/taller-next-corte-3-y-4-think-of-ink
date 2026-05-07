@@ -2,17 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark } from 'lucide-react';
 
 import { Navbar } from '../components/Navbar';
+
 import { InfoCard } from './ui/InfoCard';
-import {
-    Pencil,
-    Megaphone,
-    MessageCircle,
-    Upload,
-    Heart,
-    Bookmark,
-} from 'lucide-react';
 
 export default function Feed() {
     const [infoData, setInfoData] = useState([]);
@@ -161,19 +155,31 @@ export default function Feed() {
                     </button>
 
                     <div className="flex flex-col gap-1">
-                        <Link href="/feed" className="bg-[#ECECEC] px-4 py-3 rounded-md text-sm font-bold transition-colors">
+                        <Link
+                            href="/feed"
+                            className="bg-[#ECECEC] px-4 py-3 rounded-md text-sm font-bold transition-colors"
+                        >
                             Inicio
                         </Link>
 
-                        <Link href="#" className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50">
+                        <Link
+                            href="#"
+                            className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
+                        >
                             Explorar
                         </Link>
 
-                        <Link href="#" className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50">
+                        <Link
+                            href="#"
+                            className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
+                        >
                             Mi perfil
                         </Link>
 
-                        <Link href="#" className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50">
+                        <Link
+                            href="#"
+                            className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
+                        >
                             Configuración
                         </Link>
                     </div>
@@ -222,27 +228,35 @@ export default function Feed() {
                                             categoria={item.categoria}
                                             autor={item.autor}
                                             ubicacion={item.ubicacion}
-                                            imagenes={item.imagenes.length > 0 ? Array(item.imagenes.length) : []}
-                                            onVerMas={() => console.log(`Ver publicación ${item.id}`)}
+                                            imagenes={
+                                                item.imagenes.length > 0
+                                                    ? Array(item.imagenes.length)
+                                                    : []
+                                            }
+                                            onVerMas={() =>
+                                                console.log(`Ver publicación ${item.id}`)
+                                            }
                                         />
                                     ))}
                                 </div>
 
                                 {totalPages > 1 && (
                                     <div className="flex justify-center gap-3 mt-10 pb-8">
-                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                            <button
-                                                key={page}
-                                                onClick={() => setCurrentPage(page)}
-                                                className={`w-10 h-10 rounded-full text-sm font-bold transition-all ${
-                                                    page === currentPage
-                                                        ? 'bg-black text-white'
-                                                        : 'bg-gray-200 text-black hover:bg-gray-300'
-                                                }`}
-                                            >
-                                                {page}
-                                            </button>
-                                        ))}
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                                            (page) => (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => setCurrentPage(page)}
+                                                    className={`w-10 h-10 rounded-full text-sm font-bold transition-all ${
+                                                        page === currentPage
+                                                            ? 'bg-black text-white'
+                                                            : 'bg-gray-200 text-black hover:bg-gray-300'
+                                                    }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            )
+                                        )}
                                     </div>
                                 )}
                             </>
@@ -284,7 +298,9 @@ export default function Feed() {
                             {/* Form */}
                             <div className="flex-1 max-w-2xl space-y-6">
                                 <div>
-                                    <label className="text-sm font-bold block mb-3">Tipo de publicación</label>
+                                    <label className="text-sm font-bold block mb-3">
+                                        Tipo de publicación
+                                    </label>
                                     <div className="grid grid-cols-3 gap-3">
                                         {['Diseño', 'Promoción', 'Solicitud'].map((type) => (
                                             <button
@@ -296,9 +312,15 @@ export default function Feed() {
                                                         : 'border-gray-300 bg-white text-black hover:border-black'
                                                 }`}
                                             >
-                                                {type === 'Diseño' && <Pencil size={20} strokeWidth={1.5} />}
-                                                {type === 'Promoción' && <Megaphone size={20} strokeWidth={1.5} />}
-                                                {type === 'Solicitud' && <MessageCircle size={20} strokeWidth={1.5} />}
+                                                {type === 'Diseño' && (
+                                                    <Pencil size={20} strokeWidth={1.5} />
+                                                )}
+                                                {type === 'Promoción' && (
+                                                    <Megaphone size={20} strokeWidth={1.5} />
+                                                )}
+                                                {type === 'Solicitud' && (
+                                                    <MessageCircle size={20} strokeWidth={1.5} />
+                                                )}
                                                 <span className="text-xs">{type}</span>
                                             </button>
                                         ))}
@@ -317,7 +339,9 @@ export default function Feed() {
                                 </div>
 
                                 <div>
-                                    <label className="text-sm font-bold block mb-2">Descripción</label>
+                                    <label className="text-sm font-bold block mb-2">
+                                        Descripción
+                                    </label>
                                     <textarea
                                         placeholder="Cuéntales a todos sobre tu publicación..."
                                         value={description}
@@ -329,7 +353,9 @@ export default function Feed() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-bold block mb-2">Categoría</label>
+                                        <label className="text-sm font-bold block mb-2">
+                                            Categoría
+                                        </label>
                                         <select
                                             value={category}
                                             onChange={(e) => setCategory(e.target.value)}
@@ -345,7 +371,9 @@ export default function Feed() {
                                     </div>
 
                                     <div>
-                                        <label className="text-sm font-bold block mb-2">Ubicación</label>
+                                        <label className="text-sm font-bold block mb-2">
+                                            Ubicación
+                                        </label>
                                         <input
                                             type="text"
                                             placeholder="ej. Bogotá, Colombia"
@@ -368,8 +396,12 @@ export default function Feed() {
                                         />
                                         <div className="flex flex-col items-center gap-2">
                                             <Upload size={28} strokeWidth={1.5} />
-                                            <p className="text-sm font-bold">Arrastra imágenes o selecciona archivos</p>
-                                            <p className="text-xs text-gray-500">JPG, PNG hasta 10MB</p>
+                                            <p className="text-sm font-bold">
+                                                Arrastra imágenes o selecciona archivos
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                JPG, PNG hasta 10MB
+                                            </p>
                                         </div>
                                     </div>
 
@@ -407,7 +439,9 @@ export default function Feed() {
                             <div className="w-80">
                                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 sticky top-6">
                                     <h2 className="font-black text-sm mb-3">Vista previa</h2>
-                                    <p className="text-xs text-gray-600 mb-3">Así se verá tu publicación en el feed.</p>
+                                    <p className="text-xs text-gray-600 mb-3">
+                                        Así se verá tu publicación en el feed.
+                                    </p>
 
                                     <div className="bg-white rounded-lg border border-gray-200 p-3 space-y-2">
                                         <div className="flex items-center justify-between">
@@ -422,7 +456,9 @@ export default function Feed() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <button className="text-gray-400 hover:text-black text-sm">⋮</button>
+                                            <button className="text-gray-400 hover:text-black text-sm">
+                                                ⋮
+                                            </button>
                                         </div>
 
                                         {title && (
@@ -437,14 +473,18 @@ export default function Feed() {
                                         {images.length > 0 && (
                                             <div
                                                 className={`grid gap-1 ${
-                                                    images.length > 1 ? 'grid-cols-3' : 'grid-cols-1'
+                                                    images.length > 1
+                                                        ? 'grid-cols-3'
+                                                        : 'grid-cols-1'
                                                 }`}
                                             >
                                                 {images.map((img, idx) => (
                                                     <div
                                                         key={idx}
                                                         className={`bg-gray-200 rounded flex items-center justify-center overflow-hidden ${
-                                                            images.length === 1 ? 'aspect-[2/1]' : 'aspect-square'
+                                                            images.length === 1
+                                                                ? 'aspect-[2/1]'
+                                                                : 'aspect-square'
                                                         }`}
                                                     >
                                                         <img
@@ -468,7 +508,7 @@ export default function Feed() {
 
                                             <button className="flex-1 flex justify-center py-2">
                                                 <Bookmark size={18} strokeWidth={1.5} />
-                                             </button>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

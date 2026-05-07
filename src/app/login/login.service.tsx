@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3002/auth';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type LoginResponse = {
     access_token: string;
