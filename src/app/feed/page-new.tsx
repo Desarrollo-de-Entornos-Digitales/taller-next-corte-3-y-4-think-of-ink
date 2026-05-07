@@ -38,7 +38,7 @@ export default function Feed() {
             try {
                 const token = localStorage.getItem('token');
 
-                const response = await fetch(`${API_URL}/post`, {
+                const response = await fetch(`${API_URL}/posts`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
