@@ -57,7 +57,7 @@ export default function NewPost() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_URL}/post`, {
+            const response = await fetch(`${API_URL}/posts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
