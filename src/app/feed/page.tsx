@@ -21,6 +21,7 @@ export default function Feed() {
     const [images, setImages] = useState<string[]>([]);
     const [isPublishing, setIsPublishing] = useState(false);
     const [username, setUsername] = useState('Usuario Regular');
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -38,7 +39,7 @@ export default function Feed() {
             try {
                 const token = localStorage.getItem('token');
 
-                const response = await fetch('http://localhost:3002/post', {
+                const response = await fetch(`${API_URL}/post`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -105,7 +106,7 @@ export default function Feed() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3002/post', {
+            const response = await fetch(`${API_URL}/post`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

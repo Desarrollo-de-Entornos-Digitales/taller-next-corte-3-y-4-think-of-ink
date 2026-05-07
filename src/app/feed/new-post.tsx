@@ -5,14 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Navbar } from '../components/Navbar';
 import { CustomButton } from '../components/buttons';
-import {
-    Pencil,
-    Megaphone,
-    MessageCircle,
-    Upload,
-    Heart,
-    Bookmark,
-} from 'lucide-react';
+import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark } from 'lucide-react';
 
 export default function NewPost() {
     const router = useRouter();
@@ -24,6 +17,7 @@ export default function NewPost() {
     const [images, setImages] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [username, setUsername] = useState('Usuario Regular');
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -63,7 +57,7 @@ export default function NewPost() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3002/post', {
+            const response = await fetch(`${API_URL}/post`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,15 +105,24 @@ export default function NewPost() {
                             Inicio
                         </Link>
 
-                        <Link href="#" className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50">
+                        <Link
+                            href="#"
+                            className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
+                        >
                             Explorar
                         </Link>
 
-                        <Link href="#" className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50">
+                        <Link
+                            href="#"
+                            className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
+                        >
                             Mi perfil
                         </Link>
 
-                        <Link href="#" className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50">
+                        <Link
+                            href="#"
+                            className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
+                        >
                             Configuración
                         </Link>
                     </div>
@@ -146,7 +149,9 @@ export default function NewPost() {
 
                         <div className="space-y-6">
                             <div>
-                                <label className="text-sm font-bold block mb-3">Tipo de publicación</label>
+                                <label className="text-sm font-bold block mb-3">
+                                    Tipo de publicación
+                                </label>
                                 <div className="grid grid-cols-3 gap-3">
                                     {['Diseño', 'Promoción', 'Solicitud'].map((type) => (
                                         <button
@@ -158,9 +163,15 @@ export default function NewPost() {
                                                     : 'border-gray-300 bg-white text-black hover:border-black'
                                             }`}
                                         >
-                                           {type === 'Diseño' && <Pencil size={20} strokeWidth={1.5} />}
-                                        {type === 'Promoción' && <Megaphone size={20} strokeWidth={1.5} />}
-                                         {type === 'Solicitud' && <MessageCircle size={20} strokeWidth={1.5} />}
+                                            {type === 'Diseño' && (
+                                                <Pencil size={20} strokeWidth={1.5} />
+                                            )}
+                                            {type === 'Promoción' && (
+                                                <Megaphone size={20} strokeWidth={1.5} />
+                                            )}
+                                            {type === 'Solicitud' && (
+                                                <MessageCircle size={20} strokeWidth={1.5} />
+                                            )}
                                             <span>{type}</span>
                                         </button>
                                     ))}
@@ -191,7 +202,9 @@ export default function NewPost() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-bold block mb-2">Categoría</label>
+                                    <label className="text-sm font-bold block mb-2">
+                                        Categoría
+                                    </label>
                                     <select
                                         value={category}
                                         onChange={(e) => setCategory(e.target.value)}
@@ -207,7 +220,9 @@ export default function NewPost() {
                                 </div>
 
                                 <div>
-                                    <label className="text-sm font-bold block mb-2">Ubicación</label>
+                                    <label className="text-sm font-bold block mb-2">
+                                        Ubicación
+                                    </label>
                                     <input
                                         type="text"
                                         placeholder="ej. Bogotá, Colombia"
@@ -230,7 +245,9 @@ export default function NewPost() {
                                     />
                                     <div className="flex flex-col items-center gap-2">
                                         <Upload size={28} strokeWidth={1.5} />
-                                        <p className="text-sm font-bold">Arrastra imágenes o selecciona archivos</p>
+                                        <p className="text-sm font-bold">
+                                            Arrastra imágenes o selecciona archivos
+                                        </p>
                                         <p className="text-xs text-gray-500">JPG, PNG hasta 10MB</p>
                                     </div>
                                 </div>
@@ -269,7 +286,9 @@ export default function NewPost() {
                     <div className="w-96 sticky top-24">
                         <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                             <h2 className="font-black text-lg mb-4">Vista previa</h2>
-                            <p className="text-xs text-gray-600 mb-4">Así se verá tu publicación en el feed.</p>
+                            <p className="text-xs text-gray-600 mb-4">
+                                Así se verá tu publicación en el feed.
+                            </p>
 
                             <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
                                 <div className="flex items-center gap-3">
@@ -303,7 +322,9 @@ export default function NewPost() {
                                             <div
                                                 key={idx}
                                                 className={`bg-gray-200 rounded flex items-center justify-center overflow-hidden ${
-                                                    images.length === 1 ? 'aspect-[2.5/1]' : 'aspect-square'
+                                                    images.length === 1
+                                                        ? 'aspect-[2.5/1]'
+                                                        : 'aspect-square'
                                                 }`}
                                             >
                                                 <img
@@ -317,7 +338,7 @@ export default function NewPost() {
                                 )}
 
                                 <div className="flex gap-3 pt-2 border-t border-gray-200">
-                                   <button className="flex-1 flex justify-center py-2">
+                                    <button className="flex-1 flex justify-center py-2">
                                         <Heart size={18} strokeWidth={1.5} />
                                     </button>
 
