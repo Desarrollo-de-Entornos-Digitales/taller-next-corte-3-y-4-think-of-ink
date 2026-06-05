@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { NotificationBell } from './NotificationBell';
 
 export const Navbar = () => {
     const router = useRouter();
@@ -23,10 +24,12 @@ export const Navbar = () => {
                     <p className="text-xs text-gray-500 font-medium">Conecta ideas, crea arte.</p>
                 </div>
 
-                <div className="flex items-center gap-8">
+                <div className="flex items-center gap-6">
                     <Link href="/feed" className="text-sm font-bold text-gray-600 hover:text-black">
                         Inicio
                     </Link>
+
+                    <NotificationBell />
 
                     <div className="relative">
                         <button

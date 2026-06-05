@@ -5,12 +5,15 @@ import { useEffect, useState } from 'react';
 import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark } from 'lucide-react';
 
 import { Navbar } from '../components/Navbar';
+import { Sidebar } from '../components/Sidebar';
 
 import { InfoCard } from './ui/InfoCard';
+import { getAllPosts, createPost, normalizePostsResponse } from '@/lib/api/posts';
 
 export default function Feed() {
     const [infoData, setInfoData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [showNewPostModal, setShowNewPostModal] = useState(false);
     const [postType, setPostType] = useState('Diseño');
@@ -21,7 +24,6 @@ export default function Feed() {
     const [images, setImages] = useState<string[]>([]);
     const [isPublishing, setIsPublishing] = useState(false);
     const [username, setUsername] = useState('Usuario Regular');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -37,18 +39,18 @@ export default function Feed() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
+                setError(null);
+                setLoading(true);
                 const token = localStorage.getItem('token');
 
-                const response = await fetch(`${API_URL}/post`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                if (!token) {
+                    setError('Token no disponible');
+                    return;
+                }
 
-                const data = await response.json();
-
-                // Manejar respuesta - puede ser array u objeto
-                const postsArray = Array.isArray(data) ? data : data.data ? data.data : [];
+                // Usar el nuevo servicio con endpoint correcto
+                const response = await getAllPosts(token);
+                const postsArray = normalizePostsResponse(response);
 
                 const mappedData = postsArray.map((post: any) => ({
                     id: post.id,
@@ -62,8 +64,9 @@ export default function Feed() {
                 }));
 
                 setInfoData(mappedData);
-            } catch (error) {
-                console.error('Error obteniendo posts:', error);
+            } catch (err) {
+                console.error('Error obteniendo posts:', err);
+                setError('No pudimos cargar las publicaciones. Intenta nuevamente.');
                 setInfoData([]);
             } finally {
                 setLoading(false);
@@ -106,37 +109,52 @@ export default function Feed() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_URL}/post`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
+            if (!token) {
+                alert('Token no disponible');
+                return;
+            }
+
+            // Usar el nuevo servicio con endpoint correcto
+            await createPost(
+                {
                     content: description,
                     category: { name: category },
                     location: location,
                     imageUrl: images.length > 0 ? images[0] : null,
                     postType: postType,
-                }),
-            });
+                    title: title,
+                },
+                token
+            );
 
-            if (response.ok) {
-                alert('Publicación creada con éxito!');
-                setTitle('');
-                setDescription('');
-                setCategory('');
-                setLocation('');
-                setImages([]);
-                setPostType('Diseño');
-                setShowNewPostModal(false);
-                window.location.reload();
-            } else {
-                alert('Error al crear la publicación');
-            }
+            alert('Publicación creada con éxito!');
+            setTitle('');
+            setDescription('');
+            setCategory('');
+            setLocation('');
+            setImages([]);
+            setPostType('Diseño');
+            setShowNewPostModal(false);
+
+            // Recargar posts sin recargar la página
+            const response = await getAllPosts(token);
+            const postsArray = normalizePostsResponse(response);
+
+            const mappedData = postsArray.map((post: any) => ({
+                id: post.id,
+                autor: post.user?.username || 'Usuario Regular',
+                ubicacion: post.user?.location || 'Colombia',
+                titulo: 'Nueva publicación',
+                categoria: post.category?.name || 'General',
+                descripcion: post.content,
+                imagenes: post.imageUrl ? [post.imageUrl] : [],
+                timeAgo: '3h',
+            }));
+
+            setInfoData(mappedData);
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al publicar');
+            alert('Error al publicar. Intenta nuevamente.');
         } finally {
             setIsPublishing(false);
         }
@@ -147,54 +165,7 @@ export default function Feed() {
             <Navbar />
 
             <div className="flex pt-20">
-                <aside className="w-64 p-6 border-r border-gray-100 flex flex-col gap-4 h-[calc(100vh-5rem)] sticky top-20 overflow-y-auto">
-                    <button
-                        onClick={() => setShowNewPostModal(true)}
-                        className="w-full bg-[#4A4A4A] text-white py-3 rounded-md font-bold text-sm mb-4 hover:bg-black transition-colors"
-                    >
-                        Nueva publicación
-                    </button>
-
-                    <div className="flex flex-col gap-1">
-                        <Link
-                            href="/feed"
-                            className="bg-[#ECECEC] px-4 py-3 rounded-md text-sm font-bold transition-colors"
-                        >
-                            Inicio
-                        </Link>
-
-                        <Link
-                            href="#"
-                            className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
-                        >
-                            Explorar
-                        </Link>
-
-                        <Link
-                            href="#"
-                            className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
-                        >
-                            Mi perfil
-                        </Link>
-
-                        <Link
-                            href="#"
-                            className="px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50"
-                        >
-                            Configuración
-                        </Link>
-                    </div>
-
-                    <div className="mt-auto border-t border-gray-100 pt-6">
-                        <h3 className="font-bold text-lg mb-4">Filtros</h3>
-
-                        <div className="flex flex-col gap-4 text-sm font-bold text-gray-600">
-                            <button className="text-left hover:text-black">Ubicación</button>
-                            <button className="text-left hover:text-black">Categoría</button>
-                            <button className="text-left hover:text-black">Rango de precio</button>
-                        </div>
-                    </div>
-                </aside>
+                <Sidebar onNewPostClick={() => setShowNewPostModal(true)} />
 
                 <section className="flex-1 bg-white p-8 border-l border-gray-100 overflow-y-auto h-[calc(100vh-5rem)]">
                     <div className="max-w-3xl mx-auto">
@@ -212,9 +183,20 @@ export default function Feed() {
                             </button>
                         </div>
 
+                        {error && (
+                            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                                <p className="text-sm font-bold text-red-600">{error}</p>
+                            </div>
+                        )}
+
                         {loading && (
                             <div className="flex justify-center py-10">
-                                <span className="loading loading-spinner loading-lg"></span>
+                                <div className="text-center">
+                                    <div className="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4" />
+                                    <p className="text-sm font-bold text-gray-600">
+                                        Cargando publicaciones...
+                                    </p>
+                                </div>
                             </div>
                         )}
 

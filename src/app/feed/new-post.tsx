@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Navbar } from '../components/Navbar';
 import { CustomButton } from '../components/buttons';
 import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark } from 'lucide-react';
+import { createPost } from '@/lib/api/posts';
 
 export default function NewPost() {
     const router = useRouter();
@@ -17,7 +18,6 @@ export default function NewPost() {
     const [images, setImages] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [username, setUsername] = useState('Usuario Regular');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -57,31 +57,29 @@ export default function NewPost() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_URL}/posts`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
+            if (!token) {
+                alert('Token no disponible');
+                return;
+            }
+
+            // Usar el nuevo servicio con endpoint correcto
+            await createPost(
+                {
                     content: description,
-                    category: category,
+                    category: { name: category },
                     location: location,
                     imageUrl: images.length > 0 ? images[0] : null,
                     postType: postType,
                     title: title,
-                }),
-            });
+                },
+                token
+            );
 
-            if (response.ok) {
-                alert('Publicación creada con éxito!');
-                router.push('/feed');
-            } else {
-                alert('Error al crear la publicación');
-            }
+            alert('Publicación creada con éxito!');
+            router.push('/feed');
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al publicar');
+            alert('Error al publicar. Intenta nuevamente.');
         } finally {
             setIsLoading(false);
         }

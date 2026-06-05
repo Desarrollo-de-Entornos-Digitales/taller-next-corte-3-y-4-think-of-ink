@@ -1,0 +1,32 @@
+'use client';
+
+import { Star } from 'lucide-react';
+
+interface ArtistCardProps {
+    name: string;
+    city: string;
+    specialty: string;
+    rating: number;
+    avatar: string;
+}
+
+export const ArtistCard = ({ name, city, specialty, rating, avatar }: ArtistCardProps) => {
+    return (
+        <div className="border border-[#D9D9D9] rounded-lg p-4 bg-white hover:border-black transition-colors flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-[#E5D9F2] flex items-center justify-center text-lg font-black text-[#6000FF] flex-shrink-0">
+                {avatar}
+            </div>
+
+            <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-bold text-black">{name}</h4>
+                <p className="text-xs text-[#474747] font-medium mt-0.5">{city}</p>
+                <p className="text-xs text-[#474747] font-medium mt-0.5">{specialty}</p>
+            </div>
+
+            <div className="flex items-center gap-1 flex-shrink-0">
+                <Star size={14} className="text-[#6000FF] fill-[#6000FF]" />
+                <span className="text-sm font-bold text-black">{rating.toFixed(1)}</span>
+            </div>
+        </div>
+    );
+};

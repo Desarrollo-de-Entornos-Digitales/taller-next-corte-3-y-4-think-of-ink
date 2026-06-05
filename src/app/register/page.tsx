@@ -70,7 +70,7 @@ export default function Register() {
 
     return (
         <main className="min-h-screen flex bg-white text-black font-sans">
-            <section className="hidden md:flex md:w-[41%] bg-[#DEDEDE] p-16 flex-col justify-between">
+            <section className="hidden md:flex md:w-[41%] bg-[#D9D9D9] p-16 flex-col justify-between">
                 <div className="text-sm font-medium tracking-tight text-black">Think of ink</div>
 
                 <div className="max-w-xs mb-20">
@@ -81,7 +81,7 @@ export default function Register() {
                         <br />
                         Crea
                     </h1>
-                    <p className="text-[15px] font-medium leading-relaxed text-black/80">
+                    <p className="text-[15px] font-medium leading-relaxed text-[#474747]">
                         Únete a la comunidad de tatuadores, estudios y clientes. Comparte tu talento y encuentra nuevas
                         oportunidades.
                     </p>
@@ -92,7 +92,7 @@ export default function Register() {
 
             <section className="flex-1 overflow-y-auto px-8 md:px-24 pt-12 pb-20 relative">
                 <div className="w-full flex justify-end text-[11px] mb-8">
-                    <p className="text-gray-600">
+                    <p className="text-[#474747]">
                         ¿Ya tienes cuenta?
                         <Link href="/login" className="font-bold text-black ml-1 hover:underline">
                             Iniciar sesión
@@ -103,7 +103,7 @@ export default function Register() {
                 <div className="w-full max-w-md mx-auto">
                     <header className="mb-8">
                         <h2 className="text-2xl font-black mb-2 tracking-tighter uppercase">Crear cuenta</h2>
-                        <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">
+                        <p className="text-[#474747] text-xs font-bold uppercase tracking-widest">
                             Completa tus datos para comenzar.
                         </p>
                     </header>
@@ -114,8 +114,8 @@ export default function Register() {
                             <label className="text-[11px] font-black uppercase tracking-widest text-black ml-1 block mb-3">
                                 Soy...
                             </label>
-                            <div className="grid grid-cols-3 gap-3">
-                                {['Usuario', 'Tatuador/Estudio', 'Administrador'].map((roleOption) => (
+                            <div className="grid grid-cols-2 gap-3">
+                                {['Usuario', 'Tatuador/Estudio'].map((roleOption) => (
                                     <button
                                         key={roleOption}
                                         type="button"
@@ -123,7 +123,7 @@ export default function Register() {
                                         className={`py-4 px-3 rounded-md border-2 font-bold text-sm transition-all ${
                                             role === roleOption
                                                 ? 'border-black bg-black text-white'
-                                                : 'border-[#ECECEC] bg-white text-black hover:border-black'
+                                                : 'border-[#D9D9D9] bg-white text-black hover:border-black'
                                         }`}
                                     >
                                         {roleOption}
@@ -199,9 +199,9 @@ export default function Register() {
                                 id="terms"
                                 checked={termsAccepted}
                                 onChange={(e) => setTermsAccepted(e.target.checked)}
-                                className="w-4 h-4 rounded border-2 border-[#ECECEC] cursor-pointer accent-black"
+                                className="w-4 h-4 rounded border-2 border-[#D9D9D9] cursor-pointer accent-black"
                             />
-                            <label htmlFor="terms" className="text-xs font-medium text-gray-600 cursor-pointer">
+                            <label htmlFor="terms" className="text-xs font-medium text-[#474747] cursor-pointer">
                                 Acepto los Términos de servicio y la Política de privacidad.
                             </label>
                         </div>
@@ -218,21 +218,21 @@ export default function Register() {
 
                     {/* Divider */}
                     <div className="flex items-center gap-4 my-8">
-                        <div className="flex-1 h-px bg-gray-200"></div>
-                        <span className="text-xs font-bold text-gray-400">o registrate con</span>
-                        <div className="flex-1 h-px bg-gray-200"></div>
+                        <div className="flex-1 h-px bg-[#D9D9D9]"></div>
+                        <span className="text-xs font-bold text-[#474747]">o registrate con</span>
+                        <div className="flex-1 h-px bg-[#D9D9D9]"></div>
                     </div>
 
                     {/* OAuth Buttons */}
                     <div className="space-y-3">
-                        <button className="w-full py-3 px-4 border-2 border-[#ECECEC] rounded-md font-bold text-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                        <button className="w-full py-3 px-4 border-2 border-[#D9D9D9] rounded-md font-bold text-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
                             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <circle cx="12" cy="12" r="10"></circle>
                             </svg>
                             Continuar con Google
                         </button>
 
-                        <button className="w-full py-3 px-4 border-2 border-[#ECECEC] rounded-md font-bold text-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                        <button className="w-full py-3 px-4 border-2 border-[#D9D9D9] rounded-md font-bold text-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
                             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <circle cx="12" cy="12" r="10"></circle>
                             </svg>

@@ -6,10 +6,12 @@ import { useEffect, useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import { InfoCard } from './ui/InfoCard';
 import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark } from 'lucide-react';
+import { getAllPosts, createPost, normalizePostsResponse } from '@/lib/api/posts';
 
 export default function Feed() {
     const [infoData, setInfoData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [showNewPostModal, setShowNewPostModal] = useState(false);
     const [postType, setPostType] = useState('Diseño');
@@ -20,7 +22,6 @@ export default function Feed() {
     const [images, setImages] = useState<string[]>([]);
     const [isPublishing, setIsPublishing] = useState(false);
     const [username, setUsername] = useState('Usuario Regular');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -36,18 +37,18 @@ export default function Feed() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
+                setError(null);
+                setLoading(true);
                 const token = localStorage.getItem('token');
 
-                const response = await fetch(`${API_URL}/posts`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                if (!token) {
+                    setError('Token no disponible');
+                    return;
+                }
 
-                const data = await response.json();
-
-                // Manejar respuesta - puede ser array o objeto
-                const postsArray = Array.isArray(data) ? data : data.data ? data.data : [];
+                // Usar el nuevo servicio con endpoint correcto
+                const response = await getAllPosts(token);
+                const postsArray = normalizePostsResponse(response);
 
                 const mappedData = postsArray.map((post: any) => ({
                     id: post.id,
@@ -63,7 +64,8 @@ export default function Feed() {
                 setInfoData(mappedData);
             } catch (error) {
                 console.error('Error obteniendo posts:', error);
-                setInfoData([]); // Asegurar array vacío en error
+                setError('No pudimos cargar las publicaciones. Intenta nuevamente.');
+                setInfoData([]);
             } finally {
                 setLoading(false);
             }
@@ -105,39 +107,49 @@ export default function Feed() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3002/post', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
+            if (!token) {
+                alert('Token no disponible');
+                return;
+            }
+
+            await createPost(
+                {
                     content: description,
                     category: { name: category },
                     location: location,
                     imageUrl: images.length > 0 ? images[0] : null,
                     postType: postType,
-                }),
-            });
+                    title: title,
+                },
+                token
+            );
 
-            if (response.ok) {
-                alert('Publicación creada con éxito!');
-                // Reset form
-                setTitle('');
-                setDescription('');
-                setCategory('');
-                setLocation('');
-                setImages([]);
-                setPostType('Diseño');
-                setShowNewPostModal(false);
-                // Refresh posts
-                window.location.reload();
-            } else {
-                alert('Error al crear la publicación');
-            }
+            alert('Publicación creada con éxito!');
+            // Reset form
+            setTitle('');
+            setDescription('');
+            setCategory('');
+            setLocation('');
+            setImages([]);
+            setPostType('Diseño');
+            setShowNewPostModal(false);
+            // Refresh posts without recargar la página
+            const response = await getAllPosts(token);
+            const postsArray = normalizePostsResponse(response);
+            const mappedData = postsArray.map((post: any) => ({
+                id: post.id,
+                autor: post.user?.username || 'Usuario Regular',
+                ubicacion: post.user?.location || 'Colombia',
+                titulo: 'Nueva publicación',
+                categoria: post.category?.name || 'General',
+                descripcion: post.content,
+                imagenes: post.imageUrl ? [post.imageUrl] : [],
+                timeAgo: '3h',
+            }));
+            setInfoData(mappedData);
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al publicar');
+            alert('Error al publicar. Intenta nuevamente.');
         } finally {
             setIsPublishing(false);
         }
