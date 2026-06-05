@@ -15,7 +15,8 @@ export const Sidebar = ({ onNewPostClick }: SidebarProps) => {
     };
 
     const getLinkClass = (href: string, isButton = false) => {
-        const baseClass = 'px-4 py-3 text-sm font-bold rounded-md transition-colors';
+        const baseClass =
+            'px-4 py-3 text-sm font-bold rounded-md transition-colors';
 
         if (href === '#' || isButton) {
             return `${baseClass} text-gray-600 hover:bg-gray-50 cursor-pointer`;
@@ -48,10 +49,6 @@ export const Sidebar = ({ onNewPostClick }: SidebarProps) => {
                     Inicio
                 </Link>
 
-                <Link href="/categories" className={getLinkClass('/categories')}>
-                    Categorías
-                </Link>
-
                 <Link
                     href="/profile/my-posts"
                     className={getLinkClass('/profile/my-posts')}
@@ -71,9 +68,20 @@ export const Sidebar = ({ onNewPostClick }: SidebarProps) => {
                 <h3 className="font-bold text-lg mb-4">Filtros</h3>
 
                 <div className="flex flex-col gap-4 text-sm font-bold text-gray-600">
-                    <button className="text-left hover:text-black">Ubicación</button>
-                    <button className="text-left hover:text-black">Categoría</button>
-                    <button className="text-left hover:text-black">Rango de precio</button>
+                    <button className="text-left hover:text-black">
+                        Ubicación
+                    </button>
+
+                    <Link
+                        href="/categories"
+                        className={getLinkClass('/categories')}
+                    >
+                        Categorías
+                    </Link>
+
+                    <button className="text-left hover:text-black">
+                        Rango de precio
+                    </button>
                 </div>
             </div>
         </aside>

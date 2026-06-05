@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Star, MapPin } from 'lucide-react';
 
 interface StudioCardProps {
@@ -9,6 +10,22 @@ interface StudioCardProps {
     image?: string;
 }
 
+const STUDIO_PLACEHOLDER = (
+    <svg viewBox="0 0 200 113" className="w-full h-full p-5 opacity-15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="50" y="35" width="100" height="65" rx="3" />
+        <polygon points="40,45 100,18 160,45" />
+        <rect x="60" y="55" width="25" height="25" rx="2" />
+        <rect x="92" y="50" width="55" height="40" rx="2" />
+        <line x1="110" y1="55" x2="110" y2="85" />
+        <line x1="130" y1="55" x2="130" y2="85" />
+        <line x1="92" y1="65" x2="147" y2="65" />
+        <circle cx="72" cy="75" r="3" fill="currentColor" />
+        <circle cx="72" cy="67" r="3" fill="currentColor" />
+        <path d="M120 78 L110 90 L120 95 L130 90Z" />
+        <line x1="72" y1="80" x2="72" y2="95" strokeWidth="2" />
+    </svg>
+);
+
 export const StudioCard = ({ name, city, rating, image }: StudioCardProps) => {
     return (
         <div className="border border-[#D9D9D9] rounded-lg overflow-hidden bg-white hover:border-black transition-colors group">
@@ -16,10 +33,8 @@ export const StudioCard = ({ name, city, rating, image }: StudioCardProps) => {
                 {image ? (
                     <img src={image} alt={name} className="w-full h-full object-cover" />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <div className="w-[120%] h-[0.5px] bg-black/10 rotate-[20deg] absolute" />
-                        <div className="w-[120%] h-[0.5px] bg-black/10 -rotate-[20deg] absolute" />
-                        <span className="text-4xl opacity-20">🏢</span>
+                    <div className="w-full h-full flex items-center justify-center text-black">
+                        {STUDIO_PLACEHOLDER}
                     </div>
                 )}
             </div>

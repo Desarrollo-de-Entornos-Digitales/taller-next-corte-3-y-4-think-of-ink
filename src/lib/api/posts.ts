@@ -5,15 +5,13 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+
 interface FetchOptions {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     body?: any;
     token?: string;
 }
 
-/**
- * Realiza una llamada autenticada a la API
- */
 async function apiCall(endpoint: string, options: FetchOptions = {}) {
     const { method = 'GET', body, token } = options;
 
@@ -34,12 +32,29 @@ async function apiCall(endpoint: string, options: FetchOptions = {}) {
         config.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, config);
+    let response: Response;
+
+    try {
+        response = await fetch(`${API_URL}${endpoint}`, config);
+    } catch (networkError: any) {
+        throw new Error(
+            `Error de conexión: No se pudo conectar con el servidor (${API_URL}${endpoint}). Verifica que el backend esté corriendo.`
+        );
+    }
 
     if (!response.ok) {
-        throw new Error(
-            `API Error: ${response.status} ${response.statusText}`
-        );
+        let errorMessage = `Error ${response.status}`;
+        try {
+            const errorBody = await response.json();
+            if (errorBody.message) {
+                errorMessage = errorBody.message;
+            } else if (errorBody.error) {
+                errorMessage = errorBody.error;
+            }
+        } catch {
+            errorMessage = response.statusText || `Error ${response.status}`;
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();

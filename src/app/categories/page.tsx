@@ -17,22 +17,22 @@ const CATEGORIES = [
 ];
 
 const RECENT_POSTS = [
-    { id: '1', author: 'Ana López', avatar: 'A', title: 'Dragon tradicional a color en proceso', likes: 24, comments: 8 },
-    { id: '2', author: 'Carlos Ruiz', avatar: 'C', title: 'Fine line mandala finalizado', likes: 18, comments: 5 },
-    { id: '3', author: 'María Paz', avatar: 'M', title: 'Blackwork geométrico brazo completo', likes: 32, comments: 12 },
-    { id: '4', author: 'Juan Mora', avatar: 'J', title: 'Realismo retrato escala de grises', likes: 45, comments: 15 },
+    { id: '1', image: '/images/tattoos/tattoo-1.jpg', author: 'Ana López', avatar: 'A', title: 'Dragon tradicional a color en proceso', likes: 24, comments: 8 },
+    { id: '2', image: '/images/tattoos/tattoo-2.jpg', author: 'Carlos Ruiz', avatar: 'C', title: 'Fine line mandala finalizado', likes: 18, comments: 5 },
+    { id: '3', image: '/images/tattoos/tattoo-3.jpg', author: 'María Paz', avatar: 'M', title: 'Blackwork geométrico brazo completo', likes: 32, comments: 12 },
+    { id: '4', image: '/images/tattoos/tattoo-4.jpg', author: 'Juan Mora', avatar: 'J', title: 'Realismo retrato escala de grises', likes: 45, comments: 15 },
 ];
 
 const VIRAL_POSTS = [
-    { id: '5', author: 'Ink Master', avatar: 'I', title: 'Neo tradicional rosa y dagas', likes: 234, comments: 56 },
-    { id: '6', author: 'Sofía Toro', avatar: 'S', title: 'Lettering frase completa en espalda', likes: 189, comments: 42 },
-    { id: '7', author: 'Luis Rojas', avatar: 'L', title: 'Color realismo ave exótica', likes: 312, comments: 78 },
+    { id: '5', image: '/images/tattoos/tattoo-5.jpg', author: 'Ink Master', avatar: 'I', title: 'Neo tradicional rosa y dagas', likes: 234, comments: 56 },
+    { id: '6', image: '/images/tattoos/tattoo-6.jpg', author: 'Sofía Toro', avatar: 'S', title: 'Lettering frase completa en espalda', likes: 189, comments: 42 },
+    { id: '7', image: '/images/tattoos/tattoo-7.jpg', author: 'Luis Rojas', avatar: 'L', title: 'Color realismo ave exótica', likes: 312, comments: 78 },
 ];
 
 const TOP_LIKED = [
-    { id: '8', author: 'Black Ink', avatar: 'B', title: 'Anime sleeve completo', likes: 567, comments: 102 },
-    { id: '9', author: 'Pablo Gil', avatar: 'P', title: 'Tribal brazo geométrico', likes: 423, comments: 89 },
-    { id: '10', author: 'Diana Cruz', avatar: 'D', title: 'Fine line rostro femenino', likes: 398, comments: 67 },
+    { id: '8', image: '/images/tattoos/tattoo-8.jpg', author: 'Black Ink', avatar: 'B', title: 'Anime sleeve completo', likes: 567, comments: 102 },
+    { id: '9', image: '/images/tattoos/tattoo-9.jpg', author: 'Pablo Gil', avatar: 'P', title: 'Tribal brazo geométrico', likes: 423, comments: 89 },
+    { id: '10', image: '/images/tattoos/tattoo-10.jpg', author: 'Diana Cruz', avatar: 'D', title: 'Fine line rostro femenino', likes: 398, comments: 67 },
 ];
 
 const ARTISTS = [
@@ -98,6 +98,7 @@ export default function CategoriesPage() {
                                     {RECENT_POSTS.map((post) => (
                                         <TattooCard
                                             key={post.id}
+                                            image={post.image}
                                             author={post.author}
                                             authorAvatar={post.avatar}
                                             title={post.title}
@@ -116,6 +117,7 @@ export default function CategoriesPage() {
                                     {VIRAL_POSTS.map((post) => (
                                         <TattooCard
                                             key={post.id}
+                                            image={post.image}
                                             author={post.author}
                                             authorAvatar={post.avatar}
                                             title={post.title}
@@ -134,6 +136,7 @@ export default function CategoriesPage() {
                                     {TOP_LIKED.map((post) => (
                                         <TattooCard
                                             key={post.id}
+                                            image={post.image}
                                             author={post.author}
                                             authorAvatar={post.avatar}
                                             title={post.title}
