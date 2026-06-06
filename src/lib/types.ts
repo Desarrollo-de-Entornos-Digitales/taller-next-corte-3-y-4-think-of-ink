@@ -28,15 +28,32 @@ export interface UserPost {
     title: string;
     content: string;
     imageUrl?: string;
+    location?: string;
+    postType?: string;
     user: {
         id: string;
         username: string;
         avatar?: string;
+        location?: string;
     };
     category?: {
         name: string;
     };
     stats: PostStats;
+    likesCount?: number;
+    commentsCount?: number;
+    likedByUser?: boolean;
+    createdAt: string;
+}
+
+export interface Comment {
+    id: string;
+    content: string;
+    user: {
+        id: string;
+        username: string;
+        avatar?: string;
+    };
     createdAt: string;
 }
 

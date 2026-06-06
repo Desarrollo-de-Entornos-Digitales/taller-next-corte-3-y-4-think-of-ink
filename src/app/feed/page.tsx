@@ -1,21 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark, Send, ChevronLeft } from 'lucide-react';
 
 import { Navbar } from '../components/Navbar';
 import { Sidebar } from '../components/Sidebar';
 
 import { InfoCard } from './ui/InfoCard';
-import { getAllPosts, createPost, normalizePostsResponse } from '@/lib/api/posts';
+import { getAllPosts, createPost, normalizePostsResponse, likePost, unlikePost, getComments, createComment } from '@/lib/api/posts';
 import { formatDate } from '@/lib/utils';
 
+type TabKey = 'para-ti' | 'recientes' | 'siguiendo';
+
 export default function Feed() {
-    const [infoData, setInfoData] = useState([]);
+    const [allPosts, setAllPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [activeTab, setActiveTab] = useState<TabKey>('para-ti');
     const [showNewPostModal, setShowNewPostModal] = useState(false);
     const [postType, setPostType] = useState('Diseño');
     const [title, setTitle] = useState('');
@@ -25,6 +28,33 @@ export default function Feed() {
     const [images, setImages] = useState<string[]>([]);
     const [isPublishing, setIsPublishing] = useState(false);
     const [username, setUsername] = useState('Usuario Regular');
+    const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+    const [detailPost, setDetailPost] = useState<any>(null);
+    const [comments, setComments] = useState<any[]>([]);
+    const [commentText, setCommentText] = useState('');
+    const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+    const [commentsLoading, setCommentsLoading] = useState(false);
+
+    const fetchPosts = useCallback(async () => {
+        try {
+            setError(null);
+            setLoading(true);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Token no disponible');
+                return;
+            }
+            const response = await getAllPosts(token);
+            const postsArray = normalizePostsResponse(response);
+            setAllPosts(postsArray);
+        } catch (err) {
+            console.error('Error obteniendo posts:', err);
+            setError('No pudimos cargar las publicaciones. Intenta nuevamente.');
+            setAllPosts([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -38,50 +68,27 @@ export default function Feed() {
     }, []);
 
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                setError(null);
-                setLoading(true);
-                const token = localStorage.getItem('token');
-
-                if (!token) {
-                    setError('Token no disponible');
-                    return;
-                }
-
-                // Usar el nuevo servicio con endpoint correcto
-                const response = await getAllPosts(token);
-                const postsArray = normalizePostsResponse(response);
-
-                const mappedData = postsArray.map((post: any) => ({
-                    id: post.id,
-                    autor: post.user?.username || 'Usuario Regular',
-                    ubicacion: post.location || post.user?.location || 'Colombia',
-                    titulo: post.title || 'Nueva publicación',
-                    categoria: post.category?.name || 'General',
-                    descripcion: post.content,
-                    imagenes: post.imageUrl ? [post.imageUrl] : [],
-                    timeAgo: post.createdAt ? formatDate(post.createdAt) : '3h',
-                }));
-
-                setInfoData(mappedData);
-            } catch (err) {
-                console.error('Error obteniendo posts:', err);
-                setError('No pudimos cargar las publicaciones. Intenta nuevamente.');
-                setInfoData([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchPosts();
-    }, []);
+    }, [fetchPosts]);
 
+    const getSortedPosts = useCallback(() => {
+        if (activeTab === 'recientes') {
+            return [...allPosts].sort(
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+        }
+        if (activeTab === 'siguiendo') {
+            return [];
+        }
+        return allPosts;
+    }, [activeTab, allPosts]);
+
+    const displayPosts = getSortedPosts();
     const itemsPerPage = 2;
-    const totalPages = Math.ceil(infoData.length / itemsPerPage);
+    const totalPages = Math.ceil(displayPosts.length / itemsPerPage);
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    const currentItems = infoData.slice(start, end);
+    const currentItems = displayPosts.slice(start, end);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -137,28 +144,112 @@ export default function Feed() {
             setPostType('Diseño');
             setShowNewPostModal(false);
 
-            // Recargar posts sin recargar la página
-            const response = await getAllPosts(token);
-            const postsArray = normalizePostsResponse(response);
-
-            const mappedData = postsArray.map((post: any) => ({
-                id: post.id,
-                autor: post.user?.username || 'Usuario Regular',
-                ubicacion: post.location || post.user?.location || 'Colombia',
-                titulo: post.title || 'Nueva publicación',
-                categoria: post.category?.name || 'General',
-                descripcion: post.content,
-                imagenes: post.imageUrl ? [post.imageUrl] : [],
-                timeAgo: post.createdAt ? formatDate(post.createdAt) : '3h',
-            }));
-
-            setInfoData(mappedData);
+            await fetchPosts();
         } catch (error) {
             console.error('Error:', error);
             alert('Error al publicar. Intenta nuevamente.');
         } finally {
             setIsPublishing(false);
         }
+    };
+
+    const handleLike = async (postId: string) => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const isLiked = likedPosts.has(postId);
+
+        try {
+            if (isLiked) {
+                await unlikePost(postId, token);
+                setLikedPosts((prev) => {
+                    const next = new Set(prev);
+                    next.delete(postId);
+                    return next;
+                });
+            } else {
+                await likePost(postId, token);
+                setLikedPosts((prev) => new Set(prev).add(postId));
+            }
+            setAllPosts((prev) =>
+                prev.map((p) =>
+                    p.id === postId
+                        ? { ...p, likes: (p.likes || p.likesCount || 0) + (isLiked ? -1 : 1) }
+                        : p
+                )
+            );
+        } catch (err) {
+            console.error('Error toggling like:', err);
+        }
+    };
+
+    const openDetail = async (post: any) => {
+        setDetailPost(post);
+        setComments([]);
+        setCommentText('');
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        try {
+            setCommentsLoading(true);
+            const response = await getComments(post.id, token);
+            const commentsData = Array.isArray(response)
+                ? response
+                : response.data && Array.isArray(response.data)
+                    ? response.data
+                    : response.comments && Array.isArray(response.comments)
+                        ? response.comments
+                        : [];
+            setComments(commentsData);
+        } catch (err) {
+            console.error('Error fetching comments:', err);
+            setComments([]);
+        } finally {
+            setCommentsLoading(false);
+        }
+    };
+
+    const closeDetail = () => {
+        setDetailPost(null);
+        setComments([]);
+        setCommentText('');
+    };
+
+    const handleSubmitComment = async () => {
+        if (!commentText.trim() || !detailPost) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        setIsSubmittingComment(true);
+        try {
+            const newComment = await createComment(detailPost.id, commentText, token);
+            setComments((prev) => [...prev, newComment]);
+            setCommentText('');
+            setAllPosts((prev) =>
+                prev.map((p) =>
+                    p.id === detailPost.id
+                        ? { ...p, comments: (p.comments || p.commentsCount || 0) + 1 }
+                        : p
+                )
+            );
+        } catch (err) {
+            console.error('Error creating comment:', err);
+            alert('Error al enviar comentario');
+        } finally {
+            setIsSubmittingComment(false);
+        }
+    };
+
+    const handleTabChange = (tab: TabKey) => {
+        setActiveTab(tab);
+        setCurrentPage(1);
+    };
+
+    const getTabClass = (tab: TabKey) => {
+        const base = 'pb-3 text-xs font-bold transition-colors';
+        if (activeTab === tab) {
+            return `${base} border-b-2 border-black`;
+        }
+        return `${base} text-gray-400 hover:text-black`;
     };
 
     return (
@@ -171,18 +262,33 @@ export default function Feed() {
                 <section className="flex-1 bg-white p-8 border-l border-gray-100 overflow-y-auto h-[calc(100vh-5rem)]">
                     <div className="max-w-3xl mx-auto">
                         <div className="flex gap-8 border-b border-gray-200 mb-8">
-                            <button className="pb-3 text-xs font-bold border-b-2 border-black">
+                            <button
+                                className={getTabClass('para-ti')}
+                                onClick={() => handleTabChange('para-ti')}
+                            >
                                 Para ti
                             </button>
-
-                            <button className="pb-3 text-xs font-bold text-gray-400 hover:text-black">
+                            <button
+                                className={getTabClass('recientes')}
+                                onClick={() => handleTabChange('recientes')}
+                            >
                                 Publicaciones recientes
                             </button>
-
-                            <button className="pb-3 text-xs font-bold text-gray-400 hover:text-black">
+                            <button
+                                className={getTabClass('siguiendo')}
+                                onClick={() => handleTabChange('siguiendo')}
+                            >
                                 Siguiendo
                             </button>
                         </div>
+
+                        {activeTab === 'siguiendo' && (
+                            <div className="border border-dashed border-gray-300 rounded-lg p-10 text-center mb-6">
+                                <p className="font-bold text-gray-400 uppercase tracking-widest text-xs">
+                                    Funcionalidad disponible próximamente
+                                </p>
+                            </div>
+                        )}
 
                         {error && (
                             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
@@ -201,27 +307,83 @@ export default function Feed() {
                             </div>
                         )}
 
-                        {!loading && infoData.length > 0 && (
+                        {!loading && activeTab !== 'siguiendo' && displayPosts.length > 0 && (
                             <>
                                 <div className="flex flex-col gap-6">
-                                    {currentItems.map((item) => (
-                                        <InfoCard
-                                            key={item.id}
-                                            titulo={item.titulo}
-                                            descripcion={item.descripcion}
-                                            categoria={item.categoria}
-                                            autor={item.autor}
-                                            ubicacion={item.ubicacion}
-                                            imagenes={
-                                                item.imagenes.length > 0
-                                                    ? Array(item.imagenes.length)
-                                                    : []
-                                            }
-                                            onVerMas={() =>
-                                                console.log(`Ver publicación ${item.id}`)
-                                            }
-                                        />
-                                    ))}
+                                    {currentItems.map((item) => {
+                                        const getCount = (v: any): number => typeof v === 'number' ? v : (Array.isArray(v) ? v.length : 0);
+                                        const itemLikes = getCount(item._count?.likes ?? item.likes ?? item.likesCount ?? 0);
+                                        const itemComments = getCount(item._count?.comments ?? item.comments ?? item.commentsCount ?? 0);
+                                        return (
+                                            <div key={item.id} className="border border-gray-200 rounded-lg p-6 bg-white hover:border-black transition-colors group">
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <div className="w-8 h-8 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[#6000FF]">
+                                                        <span className="text-[10px]">👤</span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-bold">{item.user?.username || 'Usuario Regular'}</p>
+                                                        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">{item.location || item.user?.location || 'Colombia'}</p>
+                                                    </div>
+                                                    <div className="ml-auto">
+                                                        <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">
+                                                            {item.category?.name || 'General'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <h4 className="text-sm font-bold mb-1 tracking-tight">{item.title || 'Nueva publicación'}</h4>
+                                                <p className="text-[11px] text-gray-500 leading-relaxed mb-4 line-clamp-3">{item.content}</p>
+
+                                                {item.imageUrl && (
+                                                    <div className="mb-4">
+                                                        <div className="bg-[#D9D9D9] border border-gray-200 rounded overflow-hidden aspect-[2.5/1]">
+                                                            <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
+                                                    <button
+                                                        onClick={() => handleLike(item.id)}
+                                                        className="flex items-center gap-1.5"
+                                                    >
+                                                        <Heart
+                                                            size={16}
+                                                            className={`transition-colors ${
+                                                                likedPosts.has(item.id)
+                                                                    ? 'fill-red-500 text-red-500'
+                                                                    : 'text-gray-600 hover:text-red-500'
+                                                            }`}
+                                                        />
+                                                        <span className={`text-xs font-bold ${
+                                                            likedPosts.has(item.id) ? 'text-red-500' : 'text-gray-600'
+                                                        }`}>
+                                                            {itemLikes}
+                                                        </span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => openDetail(item)}
+                                                        className="flex items-center gap-1.5"
+                                                    >
+                                                        <MessageCircle size={16} className="text-gray-600 hover:text-black transition-colors" />
+                                                        <span className="text-xs font-bold text-gray-600">{itemComments}</span>
+                                                    </button>
+                                                    <div className="ml-auto">
+                                                        <button
+                                                            onClick={() => openDetail(item)}
+                                                            className="text-[10px] font-black uppercase tracking-[0.15em] border-b-2 border-transparent hover:border-black transition-all"
+                                                        >
+                                                            Ver detalles
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <p className="text-[10px] text-gray-400 mt-2">
+                                                    {item.createdAt ? formatDate(item.createdAt) : ''}
+                                                </p>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
 
                                 {totalPages > 1 && (
@@ -246,7 +408,7 @@ export default function Feed() {
                             </>
                         )}
 
-                        {!loading && infoData.length === 0 && (
+                        {!loading && activeTab !== 'siguiendo' && displayPosts.length === 0 && (
                             <div className="border border-dashed border-gray-300 rounded-lg p-10 text-center">
                                 <p className="font-bold text-gray-400 uppercase tracking-widest text-xs">
                                     No hay publicaciones todavía
@@ -495,6 +657,138 @@ export default function Feed() {
                                             </button>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Detalle de Publicación */}
+            {detailPost && (
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto">
+                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 my-8 flex flex-col max-h-[90vh]">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <div className="flex items-center gap-3">
+                                <button onClick={closeDetail} className="text-gray-400 hover:text-black">
+                                    <ChevronLeft size={24} strokeWidth={1.5} />
+                                </button>
+                                <h2 className="text-xl font-black">Detalles</h2>
+                            </div>
+                            <button onClick={closeDetail} className="text-2xl text-gray-400 hover:text-black">✕</button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6">
+                            {detailPost.imageUrl && (
+                                <div className="rounded-lg overflow-hidden border border-gray-200 mb-6">
+                                    <img src={detailPost.imageUrl} alt={detailPost.title} className="w-full max-h-80 object-cover" />
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[#6000FF] font-bold">
+                                    {detailPost.user?.username?.charAt(0)?.toUpperCase() || '👤'}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold">{detailPost.user?.username || 'Usuario'}</p>
+                                    <p className="text-xs text-gray-400">{formatDate(detailPost.createdAt)}</p>
+                                </div>
+                            </div>
+
+                            <h3 className="text-2xl font-black mb-2">{detailPost.title}</h3>
+
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {detailPost.category?.name && (
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">
+                                        {detailPost.category.name}
+                                    </span>
+                                )}
+                                {detailPost.postType && (
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">
+                                        {detailPost.postType}
+                                    </span>
+                                )}
+                                {detailPost.location && (
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">
+                                        📍 {detailPost.location}
+                                    </span>
+                                )}
+                            </div>
+
+                            <p className="text-sm text-gray-600 leading-relaxed mb-6">{detailPost.content}</p>
+
+                            <div className="flex items-center gap-6 pb-4 border-b border-gray-200 mb-6">
+                                <button onClick={() => handleLike(detailPost.id)} className="flex items-center gap-2">
+                                    <Heart
+                                        size={20}
+                                        className={`transition-colors ${
+                                            likedPosts.has(detailPost.id)
+                                                ? 'fill-red-500 text-red-500'
+                                                : 'text-gray-600 hover:text-red-500'
+                                        }`}
+                                    />
+                                    <span className={`text-sm font-bold ${likedPosts.has(detailPost.id) ? 'text-red-500' : 'text-gray-600'}`}>
+                                        {detailPost.likes || detailPost.likesCount || 0} likes
+                                    </span>
+                                </button>
+                                <div className="flex items-center gap-2">
+                                    <MessageCircle size={20} className="text-gray-600" />
+                                    <span className="text-sm font-bold text-gray-600">
+                                        {detailPost.comments || detailPost.commentsCount || 0} comentarios
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Comentarios */}
+                            <div className="mb-4">
+                                <h4 className="text-sm font-black mb-4">Comentarios</h4>
+
+                                {commentsLoading ? (
+                                    <div className="flex justify-center py-4">
+                                        <div className="w-6 h-6 border-2 border-gray-200 border-t-black rounded-full animate-spin" />
+                                    </div>
+                                ) : comments.length > 0 ? (
+                                    <div className="space-y-4 mb-6">
+                                        {comments.map((comment: any) => (
+                                            <div key={comment.id} className="flex gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[10px] font-bold text-[#6000FF] flex-shrink-0">
+                                                    {comment.user?.username?.charAt(0)?.toUpperCase() || '👤'}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-bold">{comment.user?.username || 'Usuario'}</span>
+                                                        <span className="text-[10px] text-gray-400">{formatDate(comment.createdAt)}</span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 mt-1">{comment.content}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-400 mb-6">No hay comentarios aún. Sé el primero en comentar.</p>
+                                )}
+
+                                <div className="flex gap-3 border-t border-gray-200 pt-4">
+                                    <input
+                                        type="text"
+                                        placeholder="Escribe un comentario..."
+                                        value={commentText}
+                                        onChange={(e) => setCommentText(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleSubmitComment();
+                                            }
+                                        }}
+                                        className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-md focus:border-black focus:outline-none font-medium text-sm"
+                                    />
+                                    <button
+                                        onClick={handleSubmitComment}
+                                        disabled={!commentText.trim() || isSubmittingComment}
+                                        className="px-4 py-2 bg-black text-white rounded-md font-bold text-sm hover:bg-[#333] transition-colors disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        {isSubmittingComment ? <span className="loading loading-spinner loading-sm" /> : <Send size={16} />}
+                                    </button>
                                 </div>
                             </div>
                         </div>

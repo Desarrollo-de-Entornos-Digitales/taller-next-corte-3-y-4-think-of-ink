@@ -164,6 +164,68 @@ export async function deletePost(postId: string, token: string) {
 }
 
 /**
+ * Da like a una publicación
+ */
+export async function likePost(postId: string, token: string) {
+    try {
+        return await apiCall(`/posts/${postId}/like`, {
+            method: 'POST',
+            token,
+        });
+    } catch (error) {
+        console.error('Error liking post:', error);
+        throw error;
+    }
+}
+
+/**
+ * Quita el like de una publicación
+ */
+export async function unlikePost(postId: string, token: string) {
+    try {
+        return await apiCall(`/posts/${postId}/like`, {
+            method: 'DELETE',
+            token,
+        });
+    } catch (error) {
+        console.error('Error unliking post:', error);
+        throw error;
+    }
+}
+
+/**
+ * Obtiene los comentarios de una publicación
+ */
+export async function getComments(postId: string, token: string) {
+    try {
+        return await apiCall(`/posts/${postId}/comments`, { token });
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        throw error;
+    }
+}
+
+/**
+ * Crea un comentario en una publicación
+ */
+export async function createComment(
+    postId: string,
+    content: string,
+    token: string
+) {
+    try {
+        return await apiCall(`/posts/${postId}/comments`, {
+            method: 'POST',
+            body: { content },
+            token,
+        });
+    } catch (error) {
+        console.error('Error creating comment:', error);
+        throw error;
+    }
+}
+
+/**
  * Normaliza la respuesta de la API a un array de posts
  */
 export function normalizePostsResponse(data: any): any[] {

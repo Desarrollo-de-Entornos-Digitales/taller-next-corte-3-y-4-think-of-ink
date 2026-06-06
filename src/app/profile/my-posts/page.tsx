@@ -61,11 +61,19 @@ export default function MyPostsPage() {
                 const postsArray = normalizePostsResponse(response);
 
                 // Map API response to UserPost format
+                const getCount = (val: any): number => {
+                    if (typeof val === 'number') return val;
+                    if (Array.isArray(val)) return val.length;
+                    return 0;
+                };
+
                 const mappedPosts: UserPost[] = postsArray.map((post: any) => ({
                     id: post.id,
                     title: post.title || 'Nueva publicación',
                     content: post.content || '',
                     imageUrl: post.imageUrl,
+                    location: post.location,
+                    postType: post.postType,
                     user: {
                         id: post.user?.id || '',
                         username: post.user?.username || 'Usuario',
@@ -73,8 +81,8 @@ export default function MyPostsPage() {
                     },
                     category: post.category,
                     stats: {
-                        likes: post.likes || 0,
-                        comments: post.comments || 0,
+                        likes: getCount(post._count?.likes ?? post.likes ?? post.likesCount ?? 0),
+                        comments: getCount(post._count?.comments ?? post.comments ?? post.commentsCount ?? 0),
                     },
                     createdAt: post.createdAt || new Date().toISOString(),
                 }));
@@ -130,6 +138,7 @@ export default function MyPostsPage() {
 
             setDeleteModalOpen(false);
             setPostToDelete(null);
+            alert('Publicación eliminada con éxito');
         } catch (err) {
             console.error('Error deleting post:', err);
             setError('No pudimos eliminar la publicación. Intenta nuevamente.');

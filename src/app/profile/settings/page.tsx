@@ -9,6 +9,7 @@ import { SettingsSection } from '../components/SettingsSection';
 import { SettingsFormField } from '../components/SettingsFormField';
 import { SocialMediaField } from '../components/SocialMediaField';
 import { AccountOption } from '../components/AccountOption';
+import { updateUserProfile } from '@/lib/api/users';
 
 export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(true);
@@ -67,10 +68,76 @@ export default function SettingsPage() {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
+    const [isSaving, setIsSaving] = useState(false);
+
     const handleSaveChanges = async () => {
-        console.log('Guardando cambios:', formData);
-        // Implementar lógica de guardado con API
-        // await updateUserSettings(formData);
+        setIsSaving(true);
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Token no disponible');
+                return;
+            }
+
+            const payload: Record<string, any> = {};
+            if (formData.fullName) payload.name = formData.fullName;
+            if (formData.username) payload.username = formData.username;
+            if (formData.profession) payload.profession = formData.profession;
+            if (formData.bio) payload.bio = formData.bio;
+            if (formData.email) payload.email = formData.email;
+            if (formData.website) payload.website = formData.website;
+            if (formData.location) payload.location = formData.location;
+            if (formData.linkedin) payload.linkedin = formData.linkedin;
+            if (formData.behance) payload.behance = formData.behance;
+            if (formData.instagram) payload.instagram = formData.instagram;
+            if (formData.portfolio) payload.portfolio = formData.portfolio;
+
+            await updateUserProfile(payload, token);
+
+            localStorage.setItem('username', formData.username);
+            if (formData.location) localStorage.setItem('location', formData.location);
+            if (formData.profession) localStorage.setItem('profession', formData.profession);
+            localStorage.setItem('user', JSON.stringify({
+                ...userProfile,
+                name: formData.fullName,
+                username: formData.username,
+                profession: formData.profession,
+                bio: formData.bio,
+                email: formData.email,
+                website: formData.website,
+                location: formData.location,
+                linkedin: formData.linkedin,
+                behance: formData.behance,
+                instagram: formData.instagram,
+                portfolio: formData.portfolio,
+            }));
+
+            setUserProfile((prev) =>
+                prev
+                    ? {
+                          ...prev,
+                          name: formData.fullName,
+                          username: formData.username,
+                          profession: formData.profession,
+                          bio: formData.bio,
+                          email: formData.email,
+                          website: formData.website,
+                          location: formData.location,
+                          linkedin: formData.linkedin,
+                          behance: formData.behance,
+                          instagram: formData.instagram,
+                          portfolio: formData.portfolio,
+                      }
+                    : prev
+            );
+
+            alert('Cambios guardados con éxito');
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            alert('Error al guardar cambios. Intenta nuevamente.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleCancel = () => {
@@ -304,9 +371,10 @@ export default function SettingsPage() {
                             </button>
                             <button
                                 onClick={handleSaveChanges}
-                                className="px-8 py-3 bg-black text-white rounded-md font-bold hover:bg-[#333] transition-colors"
+                                disabled={isSaving}
+                                className="px-8 py-3 bg-black text-white rounded-md font-bold hover:bg-[#333] transition-colors disabled:opacity-50"
                             >
-                                Guardar cambios
+                                {isSaving ? 'Guardando...' : 'Guardar cambios'}
                             </button>
                         </div>
                     </div>
