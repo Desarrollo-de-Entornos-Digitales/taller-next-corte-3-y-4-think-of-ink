@@ -7,6 +7,7 @@ import { Navbar } from '../components/Navbar';
 import { InfoCard } from './ui/InfoCard';
 import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark } from 'lucide-react';
 import { getAllPosts, createPost, normalizePostsResponse } from '@/lib/api/posts';
+import { formatDate } from '@/lib/utils';
 
 export default function Feed() {
     const [infoData, setInfoData] = useState([]);
@@ -53,12 +54,12 @@ export default function Feed() {
                 const mappedData = postsArray.map((post: any) => ({
                     id: post.id,
                     autor: post.user?.username || 'Usuario Regular',
-                    ubicacion: post.user?.location || 'Colombia',
-                    titulo: 'Nueva publicación',
+                    ubicacion: post.location || post.user?.location || 'Colombia',
+                    titulo: post.title || 'Nueva publicación',
                     categoria: post.category?.name || 'General',
                     descripcion: post.content,
                     imagenes: post.imageUrl ? [post.imageUrl] : [],
-                    timeAgo: '3h',
+                    timeAgo: post.createdAt ? formatDate(post.createdAt) : '3h',
                 }));
 
                 setInfoData(mappedData);
@@ -139,12 +140,12 @@ export default function Feed() {
             const mappedData = postsArray.map((post: any) => ({
                 id: post.id,
                 autor: post.user?.username || 'Usuario Regular',
-                ubicacion: post.user?.location || 'Colombia',
-                titulo: 'Nueva publicación',
+                ubicacion: post.location || post.user?.location || 'Colombia',
+                titulo: post.title || 'Nueva publicación',
                 categoria: post.category?.name || 'General',
                 descripcion: post.content,
                 imagenes: post.imageUrl ? [post.imageUrl] : [],
-                timeAgo: '3h',
+                timeAgo: post.createdAt ? formatDate(post.createdAt) : '3h',
             }));
             setInfoData(mappedData);
         } catch (error) {
