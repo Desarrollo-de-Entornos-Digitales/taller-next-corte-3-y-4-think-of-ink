@@ -5,9 +5,10 @@ import { useEffect, useState, useCallback } from 'react';
 
 import { Navbar } from '../components/Navbar';
 import { InfoCard } from './ui/InfoCard';
-import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark, Send, ChevronLeft } from 'lucide-react';
-import { getAllPosts, createPost, normalizePostsResponse, likePost, unlikePost, getComments, createComment } from '@/lib/api/posts';
+import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark, Send, ChevronLeft, Trash2 } from 'lucide-react';
+import { getAllPosts, createPost, normalizePostsResponse, likePost, getComments, createComment, deleteComment } from '@/lib/api/posts';
 import { formatDate } from '@/lib/utils';
+import { MOCK_FEED_POSTS } from '@/lib/mock-profiles';
 
 type TabKey = 'para-ti' | 'recientes' | 'siguiendo';
 
@@ -27,6 +28,7 @@ export default function Feed() {
     const [isPublishing, setIsPublishing] = useState(false);
     const [username, setUsername] = useState('Usuario Regular');
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [detailPost, setDetailPost] = useState<any>(null);
     const [comments, setComments] = useState<any[]>([]);
     const [commentText, setCommentText] = useState('');
@@ -47,10 +49,15 @@ export default function Feed() {
             const response = await getAllPosts(token);
             const postsArray = normalizePostsResponse(response);
             setAllPosts(postsArray);
+            const liked = new Set<string>();
+            for (const p of postsArray) {
+                if (p.likedByCurrentUser || p.isLiked) liked.add(p.id);
+            }
+            setLikedPosts(liked);
         } catch (err) {
             console.error('Error obteniendo posts:', err);
-            setError('No pudimos cargar las publicaciones. Intenta nuevamente.');
-            setAllPosts([]);
+            setAllPosts(MOCK_FEED_POSTS);
+            setError(null);
         } finally {
             setLoading(false);
         }
@@ -60,10 +67,17 @@ export default function Feed() {
         const token = localStorage.getItem('token');
         if (!token) {
             window.location.href = '/login';
+            return;
         }
         const storedUsername = localStorage.getItem('username');
         if (storedUsername) {
             setUsername(storedUsername);
+        }
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const uid = payload.sub || payload.id || payload.userId;
+            if (uid) setCurrentUserId(String(uid));
+        } catch {
         }
     }, []);
 
@@ -156,27 +170,26 @@ export default function Feed() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const isLiked = likedPosts.has(postId);
-
         try {
-            if (isLiked) {
-                await unlikePost(postId, token);
-                setLikedPosts((prev) => {
-                    const next = new Set(prev);
-                    next.delete(postId);
-                    return next;
-                });
-            } else {
-                await likePost(postId, token);
-                setLikedPosts((prev) => new Set(prev).add(postId));
+            const result = await likePost(postId, token);
+            const newLikesCount = result?.likesCount ?? result?.likes ?? result?._count?.likes;
+            const nowLiked = result?.likedByCurrentUser ?? result?.isLiked ?? !likedPosts.has(postId);
+            setLikedPosts((prev) => {
+                const next = new Set(prev);
+                if (nowLiked) next.add(postId);
+                else next.delete(postId);
+                return next;
+            });
+            if (newLikesCount !== undefined) {
+                setAllPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === postId ? { ...p, likesCount: newLikesCount, _count: { ...p._count, likes: newLikesCount } } : p
+                    )
+                );
+                setDetailPost((prev: any) =>
+                    prev?.id === postId ? { ...prev, likesCount: newLikesCount, _count: { ...prev._count, likes: newLikesCount } } : prev
+                );
             }
-            setAllPosts((prev) =>
-                prev.map((p) =>
-                    p.id === postId
-                        ? { ...p, likes: (p.likes || p.likesCount || 0) + (isLiked ? -1 : 1) }
-                        : p
-                )
-            );
         } catch (err) {
             console.error('Error toggling like:', err);
         }
@@ -223,18 +236,45 @@ export default function Feed() {
             const newComment = await createComment(detailPost.id, commentText, token);
             setComments((prev) => [...prev, newComment]);
             setCommentText('');
-            setAllPosts((prev) =>
-                prev.map((p) =>
-                    p.id === detailPost.id
-                        ? { ...p, comments: (p.comments || p.commentsCount || 0) + 1 }
-                        : p
-                )
-            );
+            const newCount = newComment?.commentsCount ?? newComment?._count?.comments;
+            if (newCount !== undefined) {
+                setAllPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === detailPost.id ? { ...p, commentsCount: newCount, _count: { ...p._count, comments: newCount } } : p
+                    )
+                );
+                setDetailPost((prev: any) =>
+                    prev?.id === detailPost.id ? { ...prev, commentsCount: newCount, _count: { ...prev._count, comments: newCount } } : prev
+                );
+            }
         } catch (err) {
             console.error('Error creating comment:', err);
             alert('Error al enviar comentario');
         } finally {
             setIsSubmittingComment(false);
+        }
+    };
+
+    const handleDeleteComment = async (commentId: string) => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        try {
+            await deleteComment(detailPost.id, commentId, token);
+            setComments((prev) => prev.filter((c) => c.id !== commentId));
+            if (detailPost) {
+                const current = getCount(detailPost._count?.comments ?? detailPost.comments ?? detailPost.commentsCount ?? 0);
+                const updated = Math.max(0, current - 1);
+                setDetailPost((prev: any) =>
+                    prev ? { ...prev, commentsCount: updated, _count: { ...prev._count, comments: updated } } : prev
+                );
+                setAllPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === detailPost.id ? { ...p, commentsCount: updated, _count: { ...p._count, comments: updated } } : p
+                    )
+                );
+            }
+        } catch (err) {
+            console.error('Error deleting comment:', err);
         }
     };
 
@@ -351,14 +391,20 @@ export default function Feed() {
                                         return (
                                             <div key={item.id} className="border border-gray-200 rounded-lg p-6 bg-white hover:border-black transition-colors group">
                                                 <div className="flex items-center gap-3 mb-4">
-                                                    <div className="w-8 h-8 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[#6000FF]">
-                                                        <span className="text-[10px]">👤</span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs font-bold">{item.user?.username || 'Usuario Regular'}</p>
-                                                        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">{item.location || item.user?.location || 'Colombia'}</p>
-                                                    </div>
-                                                    <div className="ml-auto">
+                                                    <Link href={item.user?.id ? `/profile/${item.user.id}` : '#'} className="flex items-center gap-3 flex-1 min-w-0">
+                                                        <div className="w-8 h-8 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[#6000FF] flex-shrink-0 overflow-hidden">
+                                                            {item.user?.avatar ? (
+                                                                <img src={item.user.avatar} alt="" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <span className="text-[10px] font-bold">{item.user?.username?.charAt(0)?.toUpperCase() || '👤'}</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-bold truncate hover:underline">{item.user?.username || 'Usuario Regular'}</p>
+                                                            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">{item.location || item.user?.location || 'Colombia'}</p>
+                                                        </div>
+                                                    </Link>
+                                                    <div className="ml-auto flex-shrink-0">
                                                         <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">
                                                             {item.category?.name || 'General'}
                                                         </span>
@@ -381,14 +427,9 @@ export default function Feed() {
                                                         onClick={() => handleLike(item.id)}
                                                         className="flex items-center gap-1.5"
                                                     >
-                                                        <Heart
-                                                            size={16}
-                                                            className={`transition-colors ${
-                                                                likedPosts.has(item.id)
-                                                                    ? 'fill-red-500 text-red-500'
-                                                                    : 'text-gray-600 hover:text-red-500'
-                                                            }`}
-                                                        />
+                                                        <span className="text-base transition-colors">
+                                                            {likedPosts.has(item.id) ? '❤️' : '🤍'}
+                                                        </span>
                                                         <span className={`text-xs font-bold ${
                                                             likedPosts.has(item.id) ? 'text-red-500' : 'text-gray-600'
                                                         }`}>
@@ -642,15 +683,19 @@ export default function Feed() {
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[#6000FF] font-bold">
-                                    {detailPost.user?.username?.charAt(0)?.toUpperCase() || '👤'}
+                            <Link href={detailPost.user?.id ? `/profile/${detailPost.user.id}` : '#'} className="flex items-center gap-3 mb-4 group">
+                                <div className="w-10 h-10 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[#6000FF] font-bold flex-shrink-0 overflow-hidden">
+                                    {detailPost.user?.avatar ? (
+                                        <img src={detailPost.user.avatar} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        detailPost.user?.username?.charAt(0)?.toUpperCase() || '👤'
+                                    )}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold">{detailPost.user?.username || 'Usuario'}</p>
+                                    <p className="text-sm font-bold group-hover:underline">{detailPost.user?.username || 'Usuario'}</p>
                                     <p className="text-xs text-gray-400">{formatDate(detailPost.createdAt)}</p>
                                 </div>
-                            </div>
+                            </Link>
 
                             <h3 className="text-2xl font-black mb-2">{detailPost.title}</h3>
 
@@ -676,14 +721,9 @@ export default function Feed() {
 
                             <div className="flex items-center gap-6 pb-4 border-b border-gray-200 mb-6">
                                 <button onClick={() => handleLike(detailPost.id)} className="flex items-center gap-2">
-                                    <Heart
-                                        size={20}
-                                        className={`transition-colors ${
-                                            likedPosts.has(detailPost.id)
-                                                ? 'fill-red-500 text-red-500'
-                                                : 'text-gray-600 hover:text-red-500'
-                                        }`}
-                                    />
+                                    <span className="text-xl transition-colors">
+                                        {likedPosts.has(detailPost.id) ? '❤️' : '🤍'}
+                                    </span>
                                     <span className={`text-sm font-bold ${likedPosts.has(detailPost.id) ? 'text-red-500' : 'text-gray-600'}`}>
                                         {getCount(detailPost._count?.likes ?? detailPost.likes ?? detailPost.likesCount ?? 0)} likes
                                     </span>
@@ -705,20 +745,37 @@ export default function Feed() {
                                     </div>
                                 ) : comments.length > 0 ? (
                                     <div className="space-y-4 mb-6">
-                                        {comments.map((comment: any) => (
-                                            <div key={comment.id} className="flex gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[10px] font-bold text-[#6000FF] flex-shrink-0">
-                                                    {comment.user?.username?.charAt(0)?.toUpperCase() || '👤'}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-bold">{comment.user?.username || 'Usuario'}</span>
-                                                        <span className="text-[10px] text-gray-400">{formatDate(comment.createdAt)}</span>
+                                        {comments.map((comment: any) => {
+                                            const isOwner = String(comment.user?.id) === String(currentUserId);
+                                            return (
+                                                <div key={comment.id} className="flex gap-3">
+                                                    <Link href={comment.user?.id ? `/profile/${comment.user.id}` : '#'} className="flex-shrink-0">
+                                                        <div className="w-8 h-8 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[10px] font-bold text-[#6000FF] overflow-hidden">
+                                                            {comment.user?.avatar ? (
+                                                                <img src={comment.user.avatar} alt="" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                comment.user?.username?.charAt(0)?.toUpperCase() || '👤'
+                                                            )}
+                                                        </div>
+                                                    </Link>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <Link href={comment.user?.id ? `/profile/${comment.user.id}` : '#'} className="text-xs font-bold hover:underline">{comment.user?.username || 'Usuario'}</Link>
+                                                            <span className="text-[10px] text-gray-400">{formatDate(comment.createdAt)}</span>
+                                                            {isOwner && (
+                                                                <button
+                                                                    onClick={() => handleDeleteComment(comment.id)}
+                                                                    className="ml-auto text-gray-400 hover:text-red-500 transition-colors"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm text-gray-600 mt-1">{comment.content}</p>
                                                     </div>
-                                                    <p className="text-sm text-gray-600 mt-1">{comment.content}</p>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <p className="text-sm text-gray-400 mb-6">No hay comentarios aún. Sé el primero en comentar.</p>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { Heart, MessageCircle } from 'lucide-react';
 
 interface TattooCardProps {
@@ -10,6 +11,8 @@ interface TattooCardProps {
     title: string;
     likes: number;
     comments: number;
+    userId?: string;
+    studioId?: string;
 }
 
 const PLACEHOLDER_VARIANTS = [
@@ -109,7 +112,7 @@ const PLACEHOLDER_VARIANTS = [
     </svg>,
 ];
 
-export const TattooCard = ({ image, author, authorAvatar, title, likes, comments }: TattooCardProps) => {
+export const TattooCard = ({ image, author, authorAvatar, title, likes, comments, userId, studioId }: TattooCardProps) => {
     const placeholder = useMemo(() => {
         let hash = 0;
         for (let i = 0; i < title.length; i++) {
@@ -131,12 +134,12 @@ export const TattooCard = ({ image, author, authorAvatar, title, likes, comments
             </div>
 
             <div className="p-4">
-                <div className="flex items-center gap-2 mb-3">
+                <Link href={studioId ? `/studio/${studioId}` : userId ? `/profile/${userId}` : '#'} className="flex items-center gap-2 mb-3 group">
                     <div className="w-6 h-6 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[10px] font-black text-[#6000FF] flex-shrink-0">
                         {authorAvatar}
                     </div>
-                    <span className="text-xs font-bold text-black">{author}</span>
-                </div>
+                    <span className="text-xs font-bold text-black group-hover:underline">{author}</span>
+                </Link>
 
                 <h3 className="text-sm font-bold text-black mb-3 line-clamp-2 leading-snug">{title}</h3>
 

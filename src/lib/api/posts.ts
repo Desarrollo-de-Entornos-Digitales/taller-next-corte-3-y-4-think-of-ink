@@ -15,12 +15,14 @@ interface FetchOptions {
 async function apiCall(endpoint: string, options: FetchOptions = {}) {
     const { method = 'GET', body, token } = options;
 
-    const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-    };
+    const headers: HeadersInit = {};
 
     if (token) {
         headers.Authorization = `Bearer ${token}`;
+    }
+
+    if (body) {
+        headers['Content-Type'] = 'application/json';
     }
 
     const config: RequestInit = {
@@ -63,9 +65,9 @@ async function apiCall(endpoint: string, options: FetchOptions = {}) {
 /**
  * Obtiene todas las publicaciones (sin filtrar por usuario)
  */
-export async function getAllPosts(token: string) {
+export async function getAllPosts(token?: string) {
     try {
-        return await apiCall('/posts', { token });
+        return await apiCall('/posts', token ? { token } : {});
     } catch (error) {
         console.error('Error fetching all posts:', error);
         throw error;
@@ -164,7 +166,7 @@ export async function deletePost(postId: string, token: string) {
 }
 
 /**
- * Da like a una publicación
+ * Da o quita like a una publicación (toggle)
  */
 export async function likePost(postId: string, token: string) {
     try {
@@ -173,22 +175,7 @@ export async function likePost(postId: string, token: string) {
             token,
         });
     } catch (error) {
-        console.error('Error liking post:', error);
-        throw error;
-    }
-}
-
-/**
- * Quita el like de una publicación
- */
-export async function unlikePost(postId: string, token: string) {
-    try {
-        return await apiCall(`/posts/${postId}/unlike`, {
-            method: 'POST',
-            token,
-        });
-    } catch (error) {
-        console.error('Error unliking post:', error);
+        console.error('Error toggling like:', error);
         throw error;
     }
 }
@@ -221,6 +208,21 @@ export async function createComment(
         });
     } catch (error) {
         console.error('Error creating comment:', error);
+        throw error;
+    }
+}
+
+/**
+ * Elimina un comentario
+ */
+export async function deleteComment(postId: string, commentId: string, token: string) {
+    try {
+        return await apiCall(`/posts/${postId}/comments/${commentId}`, {
+            method: 'DELETE',
+            token,
+        });
+    } catch (error) {
+        console.error('Error deleting comment:', error);
         throw error;
     }
 }

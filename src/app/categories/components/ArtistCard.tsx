@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Star } from 'lucide-react';
 
 interface ArtistCardProps {
@@ -8,11 +9,17 @@ interface ArtistCardProps {
     specialty: string;
     rating: number;
     avatar: string;
+    userId?: string;
+    studioId?: string;
 }
 
-export const ArtistCard = ({ name, city, specialty, rating, avatar }: ArtistCardProps) => {
+export const ArtistCard = ({ name, city, specialty, rating, avatar, userId, studioId }: ArtistCardProps) => {
+    const linkHref = studioId ? `/studio/${studioId}` : userId ? `/profile/${userId}` : '';
+    const Wrapper = linkHref ? Link : 'div';
+    const wrapperProps = linkHref ? { href: linkHref, className: 'border border-[#D9D9D9] rounded-lg p-4 bg-white hover:border-black transition-colors flex items-center gap-4' } as any
+        : { className: 'border border-[#D9D9D9] rounded-lg p-4 bg-white hover:border-black transition-colors flex items-center gap-4' };
     return (
-        <div className="border border-[#D9D9D9] rounded-lg p-4 bg-white hover:border-black transition-colors flex items-center gap-4">
+        <Wrapper {...wrapperProps}>
             <div className="w-14 h-14 rounded-full bg-[#E5D9F2] flex items-center justify-center text-lg font-black text-[#6000FF] flex-shrink-0">
                 {avatar}
             </div>
@@ -27,6 +34,6 @@ export const ArtistCard = ({ name, city, specialty, rating, avatar }: ArtistCard
                 <Star size={14} className="text-[#6000FF] fill-[#6000FF]" />
                 <span className="text-sm font-bold text-black">{rating.toFixed(1)}</span>
             </div>
-        </div>
+        </Wrapper>
     );
 };

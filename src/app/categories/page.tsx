@@ -18,29 +18,29 @@ const CATEGORIES = [
 ];
 
 const ARTISTS = [
-    { name: 'Black Ink Studio', city: 'Bogotá, Colombia', specialty: 'Blackwork y Realismo', rating: 4.9, avatar: 'B' },
-    { name: 'Real Ink Tattoo', city: 'Medellín, Colombia', specialty: 'Realismo y Color', rating: 4.8, avatar: 'R' },
-    { name: 'Fine Line Studio', city: 'Cali, Colombia', specialty: 'Fine Line y Minimalista', rating: 4.7, avatar: 'F' },
-    { name: 'Neo Ink Art', city: 'Barranquilla, Colombia', specialty: 'Neo Tradicional', rating: 4.9, avatar: 'N' },
+    { name: 'Black Ink Studio', city: 'Bogotá, Colombia', specialty: 'Blackwork y Realismo', rating: 4.9, avatar: 'B', studioId: 'black-ink-studio' },
+    { name: 'Real Ink Tattoo', city: 'Medellín, Colombia', specialty: 'Realismo y Color', rating: 4.8, avatar: 'R', studioId: 'real-ink-tattoo' },
+    { name: 'Fine Line Studio', city: 'Cali, Colombia', specialty: 'Fine Line y Minimalista', rating: 4.7, avatar: 'F', studioId: 'fine-line-studio' },
+    { name: 'Neo Ink Art', city: 'Barranquilla, Colombia', specialty: 'Neo Tradicional', rating: 4.9, avatar: 'N', studioId: 'neo-art-studio' },
 ];
 
 const STUDIOS = [
-    { name: 'Estudio 79 Tattoo', city: 'Bogotá', rating: 4.9 },
-    { name: 'La Vida Tattoo', city: 'Medellín', rating: 4.8 },
-    { name: 'Tinta Finita', city: 'Cali', rating: 4.7 },
-    { name: 'Seven Ink Studio', city: 'Cartagena', rating: 4.9 },
+    { name: 'Estudio 79 Tattoo', city: 'Bogotá', rating: 4.9, studioId: 'estudio-79-tattoo' },
+    { name: 'La Vida Tattoo', city: 'Medellín', rating: 4.8, studioId: 'la-vida-tattoo' },
+    { name: 'Tinta Finita', city: 'Cali', rating: 4.7, studioId: 'tinta-finita' },
+    { name: 'Seven Ink Studio', city: 'Cartagena', rating: 4.9, studioId: 'seven-ink-studio' },
 ];
 
 const VIRAL_POSTS = [
-    { id: '5', image: '/images/tattoos/tattoo-5.jpg', author: 'Ink Master', authorAvatar: 'I', title: 'Neo tradicional rosa y dagas', likes: 234, comments: 56 },
-    { id: '6', image: '/images/tattoos/tattoo-6.jpg', author: 'Sofía Toro', authorAvatar: 'S', title: 'Lettering frase completa en espalda', likes: 189, comments: 42 },
-    { id: '7', image: '/images/tattoos/tattoo-7.jpg', author: 'Luis Rojas', authorAvatar: 'L', title: 'Color realismo ave exótica', likes: 312, comments: 78 },
+    { id: '5', image: '/images/tattoos/tattoo-5.jpg', author: 'Ink Master', authorAvatar: 'I', title: 'Neo tradicional rosa y dagas', likes: 234, comments: 56, studioId: 'ink-master' },
+    { id: '6', image: '/images/tattoos/tattoo-6.jpg', author: 'Sofía Toro', authorAvatar: 'S', title: 'Lettering frase completa en espalda', likes: 189, comments: 42, userId: 'sofia-toro' },
+    { id: '7', image: '/images/tattoos/tattoo-7.jpg', author: 'Luis Rojas', authorAvatar: 'L', title: 'Color realismo ave exótica', likes: 312, comments: 78, userId: 'luis-rojas' },
 ];
 
 const TOP_LIKED = [
-    { id: '8', image: '/images/tattoos/tattoo-8.jpg', author: 'Black Ink', authorAvatar: 'B', title: 'Anime sleeve completo', likes: 567, comments: 102 },
-    { id: '9', image: '/images/tattoos/tattoo-9.jpg', author: 'Pablo Gil', authorAvatar: 'P', title: 'Tribal brazo geométrico', likes: 423, comments: 89 },
-    { id: '10', image: '/images/tattoos/tattoo-10.jpg', author: 'Diana Cruz', authorAvatar: 'D', title: 'Fine line rostro femenino', likes: 398, comments: 67 },
+    { id: '8', image: '/images/tattoos/tattoo-8.jpg', author: 'Black Ink', authorAvatar: 'B', title: 'Anime sleeve completo', likes: 567, comments: 102, studioId: 'black-ink' },
+    { id: '9', image: '/images/tattoos/tattoo-9.jpg', author: 'Pablo Gil', authorAvatar: 'P', title: 'Tribal brazo geométrico', likes: 423, comments: 89, userId: 'pablo-gil' },
+    { id: '10', image: '/images/tattoos/tattoo-10.jpg', author: 'Diana Cruz', authorAvatar: 'D', title: 'Fine line rostro femenino', likes: 398, comments: 67, userId: 'diana-cruz' },
 ];
 
 export default function CategoriesPage() {
@@ -142,6 +142,7 @@ export default function CategoriesPage() {
                                                         title={post.title || 'Nueva publicación'}
                                                         likes={getLikeCount(post)}
                                                         comments={getCommentCount(post)}
+                                                        userId={post.user?.id}
                                                     />
                                                 ))}
                                             </div>
@@ -161,6 +162,8 @@ export default function CategoriesPage() {
                                                     title={post.title}
                                                     likes={post.likes}
                                                     comments={post.comments}
+                                                    userId={post.userId || undefined}
+                                                    studioId={post.studioId || undefined}
                                                 />
                                             ))}
                                         </div>
@@ -179,6 +182,8 @@ export default function CategoriesPage() {
                                                     title={post.title}
                                                     likes={post.likes}
                                                     comments={post.comments}
+                                                    userId={post.userId || undefined}
+                                                    studioId={post.studioId || undefined}
                                                 />
                                             ))}
                                         </div>
@@ -206,6 +211,7 @@ export default function CategoriesPage() {
                                             specialty={artist.specialty}
                                             rating={artist.rating}
                                             avatar={artist.avatar}
+                                            studioId={artist.studioId || undefined}
                                         />
                                     ))}
                                 </div>
@@ -221,6 +227,7 @@ export default function CategoriesPage() {
                                             name={studio.name}
                                             city={studio.city}
                                             rating={studio.rating}
+                                            studioId={studio.studioId || undefined}
                                         />
                                     ))}
                                 </div>

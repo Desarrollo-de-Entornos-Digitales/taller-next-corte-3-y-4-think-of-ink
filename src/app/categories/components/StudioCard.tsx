@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo } from 'react';
 import { Star, MapPin } from 'lucide-react';
 
@@ -8,6 +9,7 @@ interface StudioCardProps {
     city: string;
     rating: number;
     image?: string;
+    studioId?: string;
 }
 
 const STUDIO_PLACEHOLDER = (
@@ -26,9 +28,12 @@ const STUDIO_PLACEHOLDER = (
     </svg>
 );
 
-export const StudioCard = ({ name, city, rating, image }: StudioCardProps) => {
+export const StudioCard = ({ name, city, rating, image, studioId }: StudioCardProps) => {
+    const Wrapper = studioId ? Link : 'div';
+    const wrapperProps = studioId ? { href: `/studio/${studioId}`, className: 'border border-[#D9D9D9] rounded-lg overflow-hidden bg-white hover:border-black transition-colors group block' } as any
+        : { className: 'border border-[#D9D9D9] rounded-lg overflow-hidden bg-white hover:border-black transition-colors group' };
     return (
-        <div className="border border-[#D9D9D9] rounded-lg overflow-hidden bg-white hover:border-black transition-colors group">
+        <Wrapper {...wrapperProps}>
             <div className="aspect-[16/9] bg-[#D9D9D9] relative overflow-hidden">
                 {image ? (
                     <img src={image} alt={name} className="w-full h-full object-cover" />
@@ -50,6 +55,6 @@ export const StudioCard = ({ name, city, rating, image }: StudioCardProps) => {
                     <span className="text-sm font-bold text-black">{rating.toFixed(1)}</span>
                 </div>
             </div>
-        </div>
+        </Wrapper>
     );
 };

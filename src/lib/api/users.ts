@@ -9,12 +9,14 @@ interface FetchOptions {
 async function apiCall(endpoint: string, options: FetchOptions = {}) {
     const { method = 'GET', body, token } = options;
 
-    const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-    };
+    const headers: HeadersInit = {};
 
     if (token) {
         headers.Authorization = `Bearer ${token}`;
+    }
+
+    if (body) {
+        headers['Content-Type'] = 'application/json';
     }
 
     const config: RequestInit = {
@@ -75,6 +77,24 @@ export async function updateUserProfile(
         });
     } catch (error) {
         console.error('Error updating user profile:', error);
+        throw error;
+    }
+}
+
+export async function getPublicProfile(userId: string, token?: string) {
+    try {
+        return await apiCall(`/users/${userId}`, token ? { token } : {});
+    } catch (error) {
+        console.error('Error fetching public profile:', error);
+        throw error;
+    }
+}
+
+export async function getPostsByUser(userId: string, token?: string) {
+    try {
+        return await apiCall(`/posts/user/${userId}`, token ? { token } : {});
+    } catch (error) {
+        console.error('Error fetching user posts:', error);
         throw error;
     }
 }
