@@ -13,7 +13,6 @@ interface TattooCardProps {
 }
 
 const PLACEHOLDER_VARIANTS = [
-    // Skull & crossbones (traditional tattoo flash)
     <svg key="0" viewBox="0 0 200 150" className="w-full h-full p-6 opacity-15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="100" cy="62" r="30" />
         <ellipse cx="88" cy="55" rx="4" ry="5" />
@@ -24,7 +23,6 @@ const PLACEHOLDER_VARIANTS = [
         <path d="M130 98 L145 130" />
         <path d="M100 90 L100 60" strokeDasharray="3 3" />
     </svg>,
-    // Rose (traditional)
     <svg key="1" viewBox="0 0 200 150" className="w-full h-full p-6 opacity-15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M100 80 C70 50 50 70 60 90 C70 110 90 120 100 130 C110 120 130 110 140 90 C150 70 130 50 100 80Z" />
         <path d="M100 80 C80 65 65 80 75 95 C80 105 90 110 100 115" />
@@ -74,7 +72,6 @@ const PLACEHOLDER_VARIANTS = [
         <line x1="95" y1="118" x2="90" y2="125" strokeWidth="0.8" />
         <line x1="105" y1="118" x2="110" y2="125" strokeWidth="0.8" />
     </svg>,
-    // Feather / script
     <svg key="5" viewBox="0 0 200 150" className="w-full h-full p-6 opacity-15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M60 100 Q80 40 140 30 Q120 50 110 70 Q100 90 90 100 Q80 110 60 100Z" />
         <path d="M110 70 L160 45" strokeWidth="1" />
@@ -85,7 +82,7 @@ const PLACEHOLDER_VARIANTS = [
         <line x1="60" y1="100" x2="50" y2="130" strokeWidth="2" />
         <path d="M130 35 Q135 40 145 33" fill="currentColor" opacity="0.5" />
     </svg>,
-    // Tribal / Polynesian pattern
+    // Tribal 
     <svg key="6" viewBox="0 0 200 150" className="w-full h-full p-6 opacity-15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M40 20 L50 10 L60 30 L55 50 L70 45 L80 60 L65 75 L50 70 L40 85 L30 75 Z" />
         <path d="M160 20 L150 10 L140 30 L145 50 L130 45 L120 60 L135 75 L150 70 L160 85 L170 75 Z" />

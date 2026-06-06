@@ -58,8 +58,8 @@ export const Sidebar = ({ onNewPostClick }: SidebarProps) => {
                 </Link>
 
                 <Link
-                    href="/profile/settings"
-                    className={getLinkClass('/profile/settings')}
+                    href="/profile"
+                    className={getLinkClass('/profile')}
                 >
                     Mi Perfil
                 </Link>
@@ -89,12 +89,15 @@ export const Sidebar = ({ onNewPostClick }: SidebarProps) => {
                         </span>
                     </Link>
 
-                    <button className={`${getLinkClass('#', true)} w-full text-left`}>
+                    <Link
+                        href="/price-range"
+                        className={getLinkClass('/price-range')}
+                    >
                         <span className="flex items-center gap-3">
                             <DollarSign size={18} strokeWidth={1.5} />
                             Rango de precio
                         </span>
-                    </button>
+                    </Link>
                 </div>
             </div>
         </aside>

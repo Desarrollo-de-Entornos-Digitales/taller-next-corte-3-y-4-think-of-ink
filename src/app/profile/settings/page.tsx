@@ -9,11 +9,14 @@ import { SettingsSection } from '../components/SettingsSection';
 import { SettingsFormField } from '../components/SettingsFormField';
 import { SocialMediaField } from '../components/SocialMediaField';
 import { AccountOption } from '../components/AccountOption';
-import { updateUserProfile } from '@/lib/api/users';
+import { getUserProfile, updateUserProfile } from '@/lib/api/users';
 
 export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | undefined>();
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [formData, setFormData] = useState<UserSettings>({
         fullName: '',
         username: '',
@@ -26,58 +29,81 @@ export default function SettingsPage() {
         behance: '',
         instagram: '',
         portfolio: '',
+        avatar: '',
     });
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            const user = JSON.parse(storedUser);
-            setUserProfile(user);
-            setFormData({
-                fullName: user.name || '',
-                username: user.username || '',
-                profession: user.profession || '',
-                bio: user.bio || '',
-                email: user.email || '',
-                website: user.website || '',
-                location: user.location || '',
-                linkedin: user.linkedin || '',
-                behance: user.behance || '',
-                instagram: user.instagram || '',
-                portfolio: user.portfolio || '',
-            });
-        } else {
-            const username = localStorage.getItem('username') || 'Usuario';
-            setUserProfile({
-                id: '',
-                name: username,
-                username,
-                email: '',
-                profession: '',
-                location: '',
-                totalPosts: 0,
-            });
-        }
-        setIsLoading(false);
+        const load = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            try {
+                const data = await getUserProfile(token);
+                const p = data.user || data.data || data;
+                const profile: UserProfile = {
+                    id: p.id || '',
+                    name: p.name || p.username || '',
+                    username: p.username || 'Usuario',
+                    email: p.email || '',
+                    profession: p.profession || '',
+                    bio: p.bio || '',
+                    location: p.location || '',
+                    avatar: p.avatar || '',
+                    website: p.website || '',
+                    linkedin: p.linkedin || '',
+                    behance: p.behance || '',
+                    instagram: p.instagram || '',
+                    portfolio: p.portfolio || '',
+                    totalPosts: p.totalPosts ?? p._count?.posts ?? 0,
+                };
+                setUserProfile(profile);
+                setFormData({
+                    fullName: profile.name,
+                    username: profile.username,
+                    profession: profile.profession || '',
+                    bio: profile.bio || '',
+                    email: profile.email || '',
+                    website: profile.website || '',
+                    location: profile.location || '',
+                    linkedin: profile.linkedin || '',
+                    behance: profile.behance || '',
+                    instagram: profile.instagram || '',
+                    portfolio: profile.portfolio || '',
+                    avatar: profile.avatar || '',
+                });
+
+                localStorage.setItem('user', JSON.stringify(profile));
+                localStorage.setItem('username', profile.username);
+                if (profile.location) localStorage.setItem('location', profile.location);
+                if (profile.profession) localStorage.setItem('profession', profile.profession);
+            } catch {
+                const storedUsername = localStorage.getItem('username') || 'Usuario';
+                setUserProfile({
+                    id: '', name: storedUsername, username: storedUsername,
+                    email: '', profession: '', location: '', totalPosts: 0,
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        load();
     }, []);
 
-    const handleFieldChange = (
-        field: keyof UserSettings,
-        value: string
-    ) => {
+    const handleFieldChange = (field: keyof UserSettings, value: string) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-    const [isSaving, setIsSaving] = useState(false);
+    const handleAvatarChange = (file: File) => {
+        setAvatarFile(file);
+        const reader = new FileReader();
+        reader.onload = (e) => setAvatarPreview(e.target?.result as string);
+        reader.readAsDataURL(file);
+    };
 
     const handleSaveChanges = async () => {
         setIsSaving(true);
         try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                alert('Token no disponible');
-                return;
-            }
+            if (!token) { alert('Token no disponible'); return; }
 
             const payload: Record<string, any> = {};
             if (formData.fullName) payload.name = formData.fullName;
@@ -92,44 +118,33 @@ export default function SettingsPage() {
             if (formData.instagram) payload.instagram = formData.instagram;
             if (formData.portfolio) payload.portfolio = formData.portfolio;
 
-            await updateUserProfile(payload, token);
+            const result = await updateUserProfile(payload, token);
 
-            localStorage.setItem('username', formData.username);
-            if (formData.location) localStorage.setItem('location', formData.location);
-            if (formData.profession) localStorage.setItem('profession', formData.profession);
-            localStorage.setItem('user', JSON.stringify({
-                ...userProfile,
-                name: formData.fullName,
-                username: formData.username,
-                profession: formData.profession,
-                bio: formData.bio,
-                email: formData.email,
-                website: formData.website,
-                location: formData.location,
-                linkedin: formData.linkedin,
-                behance: formData.behance,
-                instagram: formData.instagram,
-                portfolio: formData.portfolio,
-            }));
+            const updated = result?.user || result?.data || result;
+            const merged: UserProfile = {
+                ...(userProfile as UserProfile),
+                name: updated.name || formData.fullName,
+                username: updated.username || formData.username,
+                email: updated.email || formData.email,
+                profession: updated.profession || formData.profession,
+                bio: updated.bio || formData.bio,
+                location: updated.location || formData.location,
+                website: updated.website || formData.website,
+                linkedin: updated.linkedin || formData.linkedin,
+                behance: updated.behance || formData.behance,
+                instagram: updated.instagram || formData.instagram,
+                portfolio: updated.portfolio || formData.portfolio,
+                avatar: avatarPreview || formData.avatar || '',
+            };
 
-            setUserProfile((prev) =>
-                prev
-                    ? {
-                          ...prev,
-                          name: formData.fullName,
-                          username: formData.username,
-                          profession: formData.profession,
-                          bio: formData.bio,
-                          email: formData.email,
-                          website: formData.website,
-                          location: formData.location,
-                          linkedin: formData.linkedin,
-                          behance: formData.behance,
-                          instagram: formData.instagram,
-                          portfolio: formData.portfolio,
-                      }
-                    : prev
-            );
+            setUserProfile(merged);
+            setAvatarPreview(undefined);
+            setAvatarFile(null);
+
+            localStorage.setItem('user', JSON.stringify(merged));
+            localStorage.setItem('username', merged.username);
+            if (merged.location) localStorage.setItem('location', merged.location);
+            if (merged.profession) localStorage.setItem('profession', merged.profession);
 
             alert('Cambios guardados con éxito');
         } catch (error) {
@@ -154,25 +169,23 @@ export default function SettingsPage() {
                 behance: userProfile.behance || '',
                 instagram: userProfile.instagram || '',
                 portfolio: userProfile.portfolio || '',
+                avatar: userProfile.avatar || '',
             });
+            setAvatarPreview(undefined);
+            setAvatarFile(null);
         }
-    };
-
-    const handleAvatarChange = () => {
-        console.log('Cambiar foto de perfil');
-        // Implementar lógica de cambio de avatar
     };
 
     const handleChangePassword = () => {
         console.log('Cambiar contraseña');
-        // Implementar lógica de cambio de contraseña
     };
 
     const handleLogout = () => {
-        console.log('Cerrar sesión');
-        // Implementar lógica de cierre de sesión
         localStorage.removeItem('user');
         localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('location');
+        localStorage.removeItem('profession');
         window.location.href = '/login';
     };
 
@@ -203,13 +216,12 @@ export default function SettingsPage() {
 
                 <main className="flex-1 overflow-auto">
                     <div className="max-w-5xl mx-auto px-6 py-8 gap-8 flex flex-col">
-                        {/* Profile Header */}
                         <SettingsProfileHeader
                             profile={userProfile}
+                            avatarPreview={avatarPreview}
                             onAvatarChange={handleAvatarChange}
                         />
 
-                        {/* Información del Perfil */}
                         <SettingsSection
                             title="Información del perfil"
                             description="Actualiza la información que será visible para otros usuarios."
@@ -219,17 +231,13 @@ export default function SettingsPage() {
                                     label="Nombre completo"
                                     placeholder="Tu nombre completo"
                                     value={formData.fullName}
-                                    onChange={(value) =>
-                                        handleFieldChange('fullName', value)
-                                    }
+                                    onChange={(value) => handleFieldChange('fullName', value)}
                                 />
                                 <SettingsFormField
                                     label="Nombre de usuario"
                                     placeholder="tunombredeusuario"
                                     value={formData.username}
-                                    onChange={(value) =>
-                                        handleFieldChange('username', value)
-                                    }
+                                    onChange={(value) => handleFieldChange('username', value)}
                                 />
                             </div>
 
@@ -237,27 +245,22 @@ export default function SettingsPage() {
                                 <SettingsFormField
                                     label="Profesión"
                                     placeholder="Ej: Diseñadora Digital"
-                                    value={formData.profession}
-                                    onChange={(value) =>
-                                        handleFieldChange('profession', value)
-                                    }
+                                    value={formData.profession || ''}
+                                    onChange={(value) => handleFieldChange('profession', value)}
                                 />
                             </div>
 
                             <SettingsFormField
                                 label="Descripción"
                                 placeholder="Cuéntanos sobre ti..."
-                                value={formData.bio}
-                                onChange={(value) =>
-                                    handleFieldChange('bio', value)
-                                }
+                                value={formData.bio || ''}
+                                onChange={(value) => handleFieldChange('bio', value)}
                                 type="textarea"
                                 maxLength={500}
                                 showCharCount
                             />
                         </SettingsSection>
 
-                        {/* Información de Contacto */}
                         <SettingsSection
                             title="Información de contacto"
                             description="Esta información no será visible para otros usuarios."
@@ -266,19 +269,15 @@ export default function SettingsPage() {
                                 <SettingsFormField
                                     label="Correo electrónico"
                                     placeholder="tu@email.com"
-                                    value={formData.email}
-                                    onChange={(value) =>
-                                        handleFieldChange('email', value)
-                                    }
+                                    value={formData.email || ''}
+                                    onChange={(value) => handleFieldChange('email', value)}
                                     type="email"
                                 />
                                 <SettingsFormField
                                     label="Sitio web"
                                     placeholder="https://tuportafolio.com"
-                                    value={formData.website}
-                                    onChange={(value) =>
-                                        handleFieldChange('website', value)
-                                    }
+                                    value={formData.website || ''}
+                                    onChange={(value) => handleFieldChange('website', value)}
                                     type="url"
                                 />
                             </div>
@@ -287,15 +286,12 @@ export default function SettingsPage() {
                                 <SettingsFormField
                                     label="Ubicación"
                                     placeholder="Ciudad, País"
-                                    value={formData.location}
-                                    onChange={(value) =>
-                                        handleFieldChange('location', value)
-                                    }
+                                    value={formData.location || ''}
+                                    onChange={(value) => handleFieldChange('location', value)}
                                 />
                             </div>
                         </SettingsSection>
 
-                        {/* Redes Sociales */}
                         <SettingsSection
                             title="Redes sociales"
                             description="Comparte tus perfiles de redes sociales."
@@ -304,18 +300,14 @@ export default function SettingsPage() {
                                 <SocialMediaField
                                     label="LinkedIn"
                                     placeholder="https://linkedin.com/in/tunombre"
-                                    value={formData.linkedin}
-                                    onChange={(value) =>
-                                        handleFieldChange('linkedin', value)
-                                    }
+                                    value={formData.linkedin || ''}
+                                    onChange={(value) => handleFieldChange('linkedin', value)}
                                 />
                                 <SocialMediaField
                                     label="Behance"
                                     placeholder="https://behance.net/tunombre"
-                                    value={formData.behance}
-                                    onChange={(value) =>
-                                        handleFieldChange('behance', value)
-                                    }
+                                    value={formData.behance || ''}
+                                    onChange={(value) => handleFieldChange('behance', value)}
                                 />
                             </div>
 
@@ -323,23 +315,18 @@ export default function SettingsPage() {
                                 <SocialMediaField
                                     label="Instagram"
                                     placeholder="https://instagram.com/tunombre"
-                                    value={formData.instagram}
-                                    onChange={(value) =>
-                                        handleFieldChange('instagram', value)
-                                    }
+                                    value={formData.instagram || ''}
+                                    onChange={(value) => handleFieldChange('instagram', value)}
                                 />
                                 <SocialMediaField
                                     label="Portafolio"
                                     placeholder="https://miportafolio.com"
-                                    value={formData.portfolio}
-                                    onChange={(value) =>
-                                        handleFieldChange('portfolio', value)
-                                    }
+                                    value={formData.portfolio || ''}
+                                    onChange={(value) => handleFieldChange('portfolio', value)}
                                 />
                             </div>
                         </SettingsSection>
 
-                        {/* Cuenta */}
                         <SettingsSection
                             title="Cuenta"
                             description="Gestiona tu cuenta y seguridad."
@@ -361,7 +348,6 @@ export default function SettingsPage() {
                             </div>
                         </SettingsSection>
 
-                        {/* Botones de Acción */}
                         <div className="flex justify-end gap-4 pb-8">
                             <button
                                 onClick={handleCancel}

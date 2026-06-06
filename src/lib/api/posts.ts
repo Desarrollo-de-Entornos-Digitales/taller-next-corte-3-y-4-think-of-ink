@@ -226,6 +226,19 @@ export async function createComment(
 }
 
 /**
+ * Filtra publicaciones por rango de precio
+ */
+export async function filterByPrice(minPrice: number, maxPrice: number, token: string) {
+    try {
+        const params = new URLSearchParams({ minPrice: String(minPrice), maxPrice: String(maxPrice) });
+        return await apiCall(`/posts/filter-by-price?${params}`, { token });
+    } catch (error) {
+        console.error('Error filtering by price:', error);
+        throw error;
+    }
+}
+
+/**
  * Normaliza la respuesta de la API a un array de posts
  */
 export function normalizePostsResponse(data: any): any[] {

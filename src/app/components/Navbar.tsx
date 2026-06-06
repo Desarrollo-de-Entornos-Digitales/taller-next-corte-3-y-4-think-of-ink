@@ -2,12 +2,27 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NotificationBell } from './NotificationBell';
 
 export const Navbar = () => {
     const router = useRouter();
     const [showDropdown, setShowDropdown] = useState(false);
+    const [username, setUsername] = useState('Usuario');
+    const [avatar, setAvatar] = useState('');
+
+    useEffect(() => {
+        const stored = localStorage.getItem('username');
+        if (stored) setUsername(stored);
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                const u = JSON.parse(userStr);
+                if (u.username) setUsername(u.username);
+                if (u.avatar) setAvatar(u.avatar);
+            } catch {}
+        }
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -36,22 +51,26 @@ export const Navbar = () => {
                             onClick={() => setShowDropdown(!showDropdown)}
                             className="text-sm font-bold text-gray-600 hover:text-black flex items-center gap-2"
                         >
-                            <div className="w-6 h-6 rounded-full bg-[#E5D9F2] flex items-center justify-center text-xs">
-                                👤
+                            <div className="w-6 h-6 rounded-full bg-[#E5D9F2] flex items-center justify-center text-xs overflow-hidden">
+                                {avatar ? (
+                                    <img src={avatar} alt={username} className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-[10px] font-bold text-[#6000FF]">{username.charAt(0).toUpperCase()}</span>
+                                )}
                             </div>
-                            <span>Usuario</span>
+                            <span>{username}</span>
                         </button>
 
                         {showDropdown && (
                             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
                                 <Link
-                                    href="#"
+                                    href="/profile"
                                     className="block px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50"
                                 >
                                     Mi perfil
                                 </Link>
                                 <Link
-                                    href="#"
+                                    href="/profile/settings"
                                     className="block px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50"
                                 >
                                     Configuración

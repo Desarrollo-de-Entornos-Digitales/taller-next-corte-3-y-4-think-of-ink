@@ -35,6 +35,8 @@ export default function Feed() {
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
     const [commentsLoading, setCommentsLoading] = useState(false);
 
+    const getCount = (v: any): number => typeof v === 'number' ? v : (Array.isArray(v) ? v.length : 0);
+
     const fetchPosts = useCallback(async () => {
         try {
             setError(null);
@@ -311,7 +313,6 @@ export default function Feed() {
                             <>
                                 <div className="flex flex-col gap-6">
                                     {currentItems.map((item) => {
-                                        const getCount = (v: any): number => typeof v === 'number' ? v : (Array.isArray(v) ? v.length : 0);
                                         const itemLikes = getCount(item._count?.likes ?? item.likes ?? item.likesCount ?? 0);
                                         const itemComments = getCount(item._count?.comments ?? item.comments ?? item.commentsCount ?? 0);
                                         return (
@@ -728,13 +729,13 @@ export default function Feed() {
                                         }`}
                                     />
                                     <span className={`text-sm font-bold ${likedPosts.has(detailPost.id) ? 'text-red-500' : 'text-gray-600'}`}>
-                                        {detailPost.likes || detailPost.likesCount || 0} likes
+                                        {getCount(detailPost._count?.likes ?? detailPost.likes ?? detailPost.likesCount ?? 0)} likes
                                     </span>
                                 </button>
                                 <div className="flex items-center gap-2">
                                     <MessageCircle size={20} className="text-gray-600" />
                                     <span className="text-sm font-bold text-gray-600">
-                                        {detailPost.comments || detailPost.commentsCount || 0} comentarios
+                                        {getCount(detailPost._count?.comments ?? detailPost.comments ?? detailPost.commentsCount ?? 0)} comentarios
                                     </span>
                                 </div>
                             </div>

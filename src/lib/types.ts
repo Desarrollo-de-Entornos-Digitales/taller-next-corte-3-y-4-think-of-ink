@@ -93,4 +93,7 @@ export interface UserSettings {
     behance?: string;
     instagram?: string;
     portfolio?: string;
+
+    // Avatar (base64 data URL)
+    avatar?: string;
 }

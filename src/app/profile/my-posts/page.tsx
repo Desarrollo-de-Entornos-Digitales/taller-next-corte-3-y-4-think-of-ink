@@ -95,8 +95,14 @@ export default function MyPostsPage() {
                         ? { ...prev, totalPosts: mappedPosts.length }
                         : null
                 );
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Error fetching posts:', err);
+                if (err?.message === 'Unauthorized' || err?.message?.includes('401')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    router.push('/login');
+                    return;
+                }
                 setError('No pudimos cargar tus publicaciones. Intenta nuevamente.');
                 setPosts([]);
             } finally {
@@ -105,7 +111,7 @@ export default function MyPostsPage() {
         };
 
         fetchUserPosts();
-    }, []);
+    }, [router]);
 
     const handleDeleteClick = (postId: string) => {
         setPostToDelete(postId);
