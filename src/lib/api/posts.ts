@@ -183,8 +183,8 @@ export async function likePost(postId: string, token: string) {
  */
 export async function unlikePost(postId: string, token: string) {
     try {
-        return await apiCall(`/posts/${postId}/like`, {
-            method: 'DELETE',
+        return await apiCall(`/posts/${postId}/unlike`, {
+            method: 'POST',
             token,
         });
     } catch (error) {

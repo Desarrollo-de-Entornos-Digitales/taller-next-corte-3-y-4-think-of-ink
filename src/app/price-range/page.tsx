@@ -9,7 +9,7 @@ import { filterByPrice } from '@/lib/api/posts';
 interface PriceResult {
     id: string;
     name: string;
-    image?: string;
+    logoUrl?: string;
     location?: string;
     category?: string;
     minPrice: number;
@@ -38,16 +38,16 @@ const MAX = 1500000;
 const STEP = 50000;
 
 const MOCK_RESULTS: PriceResult[] = [
-    { id: 'm1', name: 'Ink Starter Studio', image: '/images/tattoos/tattoo-1.jpg', location: 'Cali, Colombia', category: 'Estudio', minPrice: 30000, maxPrice: 80000, rating: 4.5, reviews: 23 },
-    { id: 'm2', name: 'Mini Tattoo Cali', image: '/images/tattoos/tattoo-2.jpg', location: 'San Fernando, Cali', category: 'Tatuador', minPrice: 50000, maxPrice: 95000, rating: 4.3, reviews: 15 },
-    { id: 'm3', name: 'Fine Line Studio', image: '/images/tattoos/tattoo-3.jpg', location: 'Granada, Cali', category: 'Estudio', minPrice: 120000, maxPrice: 280000, rating: 4.8, reviews: 42 },
-    { id: 'm4', name: 'Neo Art Tattoo', image: '/images/tattoos/tattoo-4.jpg', location: 'Centro, Cali', category: 'Tatuador', minPrice: 150000, maxPrice: 290000, rating: 4.6, reviews: 31 },
-    { id: 'm5', name: 'Black House Tattoo', image: '/images/tattoos/tattoo-5.jpg', location: 'Granada, Cali', category: 'Estudio', minPrice: 350000, maxPrice: 550000, rating: 4.9, reviews: 78 },
-    { id: 'm6', name: 'Real Ink Tattoo', image: '/images/tattoos/tattoo-6.jpg', location: 'Centro, Cali', category: 'Estudio', minPrice: 300000, maxPrice: 580000, rating: 4.7, reviews: 56 },
-    { id: 'm7', name: 'Premium Blackwork', image: '/images/tattoos/tattoo-7.jpg', location: 'San Antonio, Cali', category: 'Tatuador', minPrice: 650000, maxPrice: 950000, rating: 4.9, reviews: 102 },
-    { id: 'm8', name: 'Artistic Cali', image: '/images/tattoos/tattoo-8.jpg', location: 'Menga, Cali', category: 'Estudio', minPrice: 700000, maxPrice: 990000, rating: 4.8, reviews: 89 },
-    { id: 'm9', name: 'Elite Tattoo Studio', image: '/images/tattoos/tattoo-9.jpg', location: 'Bogotá, Colombia', category: 'Estudio', minPrice: 1100000, maxPrice: 1500000, rating: 5.0, reviews: 204 },
-    { id: 'm10', name: 'Master Ink Collective', image: '/images/tattoos/tattoo-10.jpg', location: 'Medellín, Colombia', category: 'Tatuador', minPrice: 1200000, maxPrice: 1500000, rating: 4.9, reviews: 167 },
+    { id: 'm1', name: 'Ink Starter Studio', logoUrl: '/images/logos/ink-starter-studio.png', location: 'Cali, Colombia', category: 'Estudio', minPrice: 30000, maxPrice: 80000, rating: 4.5, reviews: 23 },
+    { id: 'm2', name: 'Mini Tattoo Cali', logoUrl: '/images/logos/mini-tattoo-cali.png', location: 'San Fernando, Cali', category: 'Tatuador', minPrice: 50000, maxPrice: 95000, rating: 4.3, reviews: 15 },
+    { id: 'm3', name: 'Fine Line Studio', logoUrl: '/images/logos/fine-line-studio.png', location: 'Granada, Cali', category: 'Estudio', minPrice: 120000, maxPrice: 280000, rating: 4.8, reviews: 42 },
+    { id: 'm4', name: 'Neo Art Tattoo', logoUrl: '/images/logos/neo-art-studio.png', location: 'Centro, Cali', category: 'Tatuador', minPrice: 150000, maxPrice: 290000, rating: 4.6, reviews: 31 },
+    { id: 'm5', name: 'Black House Tattoo', logoUrl: '/images/logos/black-house-tattoo.png', location: 'Granada, Cali', category: 'Estudio', minPrice: 350000, maxPrice: 550000, rating: 4.9, reviews: 78 },
+    { id: 'm6', name: 'Real Ink Tattoo', logoUrl: '/images/logos/real-ink-tattoo.png', location: 'Centro, Cali', category: 'Estudio', minPrice: 300000, maxPrice: 580000, rating: 4.7, reviews: 56 },
+    { id: 'm7', name: 'Premium Blackwork', logoUrl: '', location: 'San Antonio, Cali', category: 'Tatuador', minPrice: 650000, maxPrice: 950000, rating: 4.9, reviews: 102 },
+    { id: 'm8', name: 'Artistic Cali', logoUrl: '', location: 'Menga, Cali', category: 'Estudio', minPrice: 700000, maxPrice: 990000, rating: 4.8, reviews: 89 },
+    { id: 'm9', name: 'Elite Tattoo Studio', logoUrl: '', location: 'Bogotá, Colombia', category: 'Estudio', minPrice: 1100000, maxPrice: 1500000, rating: 5.0, reviews: 204 },
+    { id: 'm10', name: 'Master Ink Collective', logoUrl: '', location: 'Medellín, Colombia', category: 'Tatuador', minPrice: 1200000, maxPrice: 1500000, rating: 4.9, reviews: 167 },
 ];
 
 const formatPrice = (v: number) => {
@@ -55,6 +55,22 @@ const formatPrice = (v: number) => {
     if (v >= 1000) return `$${(v / 1000).toFixed(0).replace('.0', '')}K`;
     return `$${v.toLocaleString('es-CO')}`;
 };
+
+const DefaultStudioLogo = () => (
+    <svg viewBox="0 0 200 150" className="w-full h-full p-8" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="30" y="50" width="140" height="90" rx="6" />
+        <rect x="55" y="70" width="90" height="50" rx="4" />
+        <rect x="55" y="20" width="90" height="30" rx="6" />
+        <line x1="100" y1="20" x2="100" y2="10" />
+        <line x1="80" y1="10" x2="120" y2="10" />
+        <rect x="80" y="80" width="40" height="40" rx="2" />
+        <circle cx="100" cy="100" r="8" />
+        <line x1="100" y1="95" x2="100" y2="100" />
+        <line x1="97" y1="100" x2="103" y2="100" />
+        <rect x="65" y="25" width="15" height="10" rx="2" />
+        <rect x="120" y="25" width="15" height="10" rx="2" />
+    </svg>
+);
 
 function filterMock(min: number, max: number): PriceResult[] {
     return MOCK_RESULTS.filter((r) => r.minPrice >= min && r.maxPrice <= max);
@@ -245,17 +261,15 @@ export default function PriceRangePage() {
                                         key={item.id}
                                         className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:border-black transition-colors group"
                                     >
-                                        <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
-                                            {item.image ? (
+                                        <div className="aspect-[4/3] bg-gray-50 overflow-hidden">
+                                            {item.logoUrl ? (
                                                 <img
-                                                    src={item.image}
+                                                    src={item.logoUrl}
                                                     alt={item.name}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                                                 />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <DollarSign size={40} className="text-gray-300" />
-                                                </div>
+                                                <DefaultStudioLogo />
                                             )}
                                         </div>
 

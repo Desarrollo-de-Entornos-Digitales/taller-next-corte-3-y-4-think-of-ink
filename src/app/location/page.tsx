@@ -22,13 +22,13 @@ interface Studio {
 const STUDIOS: Studio[] = [
     {
         id: '1',
-        name: 'Ink Master Studio',
+        name: 'Ink Starter Studio',
         address: 'San Fernando, Cali',
         lat: 3.4422,
         lng: -76.5231,
         rating: 4.9,
         distance: '0.4 km',
-        image: '/images/tattoos/tattoo-5.jpg',
+        image: '/images/logos/ink-starter-studio.png',
     },
     {
         id: '2',
@@ -38,7 +38,7 @@ const STUDIOS: Studio[] = [
         lng: -76.532,
         rating: 4.8,
         distance: '0.8 km',
-        image: '/images/tattoos/tattoo-6.jpg',
+        image: '/images/logos/black-house-tattoo.png',
     },
     {
         id: '3',
@@ -48,7 +48,7 @@ const STUDIOS: Studio[] = [
         lng: -76.515,
         rating: 4.7,
         distance: '1.2 km',
-        image: '/images/tattoos/tattoo-7.jpg',
+        image: '/images/logos/real-ink-tattoo.png',
     },
     {
         id: '4',
@@ -58,17 +58,17 @@ const STUDIOS: Studio[] = [
         lng: -76.54,
         rating: 4.9,
         distance: '1.5 km',
-        image: '/images/tattoos/tattoo-8.jpg',
+        image: '/images/logos/neo-art-studio.png',
     },
     {
         id: '5',
-        name: 'Fine Line Collective',
+        name: 'Fine Line Studio',
         address: 'Menga, Cali',
         lat: 3.46,
         lng: -76.528,
         rating: 4.7,
         distance: '2.1 km',
-        image: '/images/tattoos/tattoo-9.jpg',
+        image: '/images/logos/fine-line-studio.png',
     },
 ];
 
