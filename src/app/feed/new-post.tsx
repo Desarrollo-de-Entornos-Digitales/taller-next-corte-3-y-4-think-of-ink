@@ -201,6 +201,7 @@ export default function NewPost() {
                                     {['Diseño', 'Promoción', 'Solicitud'].map((type) => (
                                         <button
                                             key={type}
+                                            data-type={type}
                                             onClick={() => setPostType(type)}
                                             className={`py-6 px-4 rounded-md border-2 font-bold text-sm transition-all flex flex-col items-center gap-2 ${
                                                 postType === type
@@ -251,6 +252,7 @@ export default function NewPost() {
                                         Categoría
                                     </label>
                                     <select
+                                        id="post-category"
                                         value={category}
                                         onChange={(e) => setCategory(e.target.value)}
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-md focus:border-black focus:outline-none font-medium text-sm bg-white"
