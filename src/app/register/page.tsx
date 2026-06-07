@@ -82,8 +82,8 @@ export default function Register() {
                         Crea
                     </h1>
                     <p className="text-[15px] font-medium leading-relaxed text-[#474747]">
-                        Únete a la comunidad de tatuadores, estudios y clientes. Comparte tu talento y encuentra nuevas
-                        oportunidades.
+                        Únete a la comunidad de tatuadores, estudios y clientes. Comparte tu talento
+                        y encuentra nuevas oportunidades.
                     </p>
                 </div>
 
@@ -102,7 +102,12 @@ export default function Register() {
 
                 <div className="w-full max-w-md mx-auto">
                     <header className="mb-8">
-                        <h2 className="text-2xl font-black mb-2 tracking-tighter uppercase">Crear cuenta</h2>
+                        <h2
+                            className="text-2xl font-black mb-2 tracking-tighter uppercase"
+                            data-cy="titulo-registro"
+                        >
+                            Crear cuenta
+                        </h2>
                         <p className="text-[#474747] text-xs font-bold uppercase tracking-widest">
                             Completa tus datos para comenzar.
                         </p>
@@ -201,7 +206,10 @@ export default function Register() {
                                 onChange={(e) => setTermsAccepted(e.target.checked)}
                                 className="w-4 h-4 rounded border-2 border-[#D9D9D9] cursor-pointer accent-black"
                             />
-                            <label htmlFor="terms" className="text-xs font-medium text-[#474747] cursor-pointer">
+                            <label
+                                htmlFor="terms"
+                                className="text-xs font-medium text-[#474747] cursor-pointer"
+                            >
                                 Acepto los Términos de servicio y la Política de privacidad.
                             </label>
                         </div>
@@ -226,14 +234,26 @@ export default function Register() {
                     {/* OAuth Buttons */}
                     <div className="space-y-3">
                         <button className="w-full py-3 px-4 border-2 border-[#D9D9D9] rounded-md font-bold text-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg
+                                className="w-5 h-5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
                                 <circle cx="12" cy="12" r="10"></circle>
                             </svg>
                             Continuar con Google
                         </button>
 
                         <button className="w-full py-3 px-4 border-2 border-[#D9D9D9] rounded-md font-bold text-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg
+                                className="w-5 h-5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
                                 <circle cx="12" cy="12" r="10"></circle>
                             </svg>
                             Continuar con Facebook
