@@ -108,7 +108,7 @@ export default function StudioProfilePage() {
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
                     <div className="w-24 h-24 md:w-36 md:h-36 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-gray-100">
                         {studio.logoUrl ? (
-                            <img src={studio.logoUrl} alt={studio.name} className="w-full h-full object-cover" />
+                            <img src={resolveImageUrl(studio.logoUrl)} alt={studio.name} className="w-full h-full object-cover" />
                         ) : (
                             <Camera size={32} className="text-gray-400" />
                         )}

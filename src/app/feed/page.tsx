@@ -8,7 +8,7 @@ import { Navbar } from '../components/Navbar';
 import { Sidebar } from '../components/Sidebar';
 
 import { InfoCard } from './ui/InfoCard';
-import { getAllPosts, createPost, normalizePostsResponse, likePost, getComments, createComment, deleteComment } from '@/lib/api/posts';
+import { getAllPosts, createPost, normalizePostsResponse, likePost, getComments, createComment, deleteComment, deletePost } from '@/lib/api/posts';
 import { formatDate, resolveImageUrl } from '@/lib/utils';
 import { MOCK_FEED_POSTS } from '@/lib/mock-profiles';
 
@@ -42,6 +42,9 @@ export default function Feed() {
     const [commentText, setCommentText] = useState('');
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
     const [commentsLoading, setCommentsLoading] = useState(false);
+    const [deleteConfirmPostId, setDeleteConfirmPostId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const commentInputRef = useRef<HTMLInputElement>(null);
 
     const getCount = (v: any): number => typeof v === 'number' ? v : (Array.isArray(v) ? v.length : 0);
 
@@ -63,7 +66,7 @@ export default function Feed() {
             setAllPosts(postsArray);
             const liked = new Set<string>();
             for (const p of postsArray) {
-                if (p.likedByCurrentUser || p.isLiked) liked.add(p.id);
+                if (p.likedByCurrentUser || p.isLiked || p.liked) liked.add(p.id);
             }
             setLikedPosts(liked);
         } catch (err) {
@@ -216,8 +219,8 @@ export default function Feed() {
 
         try {
             const result = await likePost(postId, token);
-            const newLikesCount = result?.likesCount ?? result?.likes ?? result?._count?.likes;
-            const nowLiked = result?.likedByCurrentUser ?? result?.isLiked ?? !likedPosts.has(postId);
+            const newLikesCount = result?.likesCount ?? result?.likes ?? result?._count?.likes ?? result?.count;
+            const nowLiked = result?.likedByCurrentUser ?? result?.isLiked ?? result?.liked ?? false;
             setLikedPosts((prev) => {
                 const next = new Set(prev);
                 if (nowLiked) next.add(postId);
@@ -236,6 +239,24 @@ export default function Feed() {
             }
         } catch (err) {
             console.error('Error toggling like:', err);
+        }
+    };
+
+    const handleDeletePost = async () => {
+        if (!deleteConfirmPostId) return;
+        setIsDeleting(true);
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        try {
+            await deletePost(deleteConfirmPostId, token);
+            setAllPosts((prev) => prev.filter((p) => p.id !== deleteConfirmPostId));
+            if (detailPost?.id === deleteConfirmPostId) closeDetail();
+        } catch (err) {
+            console.error('Error deleting post:', err);
+            alert('Error al eliminar la publicación');
+        } finally {
+            setIsDeleting(false);
+            setDeleteConfirmPostId(null);
         }
     };
 
@@ -277,10 +298,12 @@ export default function Feed() {
 
         setIsSubmittingComment(true);
         try {
-            const newComment = await createComment(detailPost.id, commentText, token);
+            const res = await createComment(detailPost.id, commentText, token);
+            const newComment = res?.data || res?.comment || res;
             setComments((prev) => [...prev, newComment]);
             setCommentText('');
-            const newCount = newComment?.commentsCount ?? newComment?._count?.comments;
+            const newCount = (typeof res?.commentsCount === 'number' ? res.commentsCount
+                : res?._count?.comments ?? newComment?.commentsCount ?? newComment?._count?.comments);
             if (newCount !== undefined) {
                 setAllPosts((prev) =>
                     prev.map((p) =>
@@ -289,6 +312,17 @@ export default function Feed() {
                 );
                 setDetailPost((prev: any) =>
                     prev?.id === detailPost.id ? { ...prev, commentsCount: newCount, _count: { ...prev._count, comments: newCount } } : prev
+                );
+            } else {
+                const current = getCount(detailPost._count?.comments ?? detailPost.comments ?? detailPost.commentsCount ?? 0);
+                const updated = current + 1;
+                setAllPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === detailPost.id ? { ...p, commentsCount: updated, _count: { ...p._count, comments: updated } } : p
+                    )
+                );
+                setDetailPost((prev: any) =>
+                    prev?.id === detailPost.id ? { ...prev, commentsCount: updated, _count: { ...prev._count, comments: updated } } : prev
                 );
             }
         } catch (err) {
@@ -303,11 +337,13 @@ export default function Feed() {
         const token = localStorage.getItem('token');
         if (!token) return;
         try {
-            await deleteComment(detailPost.id, commentId, token);
+            const res = await deleteComment(detailPost.id, commentId, token);
             setComments((prev) => prev.filter((c) => c.id !== commentId));
             if (detailPost) {
+                const desCount = (typeof res?.commentsCount === 'number' ? res.commentsCount
+                    : res?._count?.comments);
                 const current = getCount(detailPost._count?.comments ?? detailPost.comments ?? detailPost.commentsCount ?? 0);
-                const updated = Math.max(0, current - 1);
+                const updated = desCount !== undefined ? desCount : Math.max(0, current - 1);
                 setDetailPost((prev: any) =>
                     prev ? { ...prev, commentsCount: updated, _count: { ...prev._count, comments: updated } } : prev
                 );
@@ -402,7 +438,7 @@ export default function Feed() {
                                                     <Link href={item.user?.id ? `/profile/${item.user.id}` : '#'} className="flex items-center gap-3 flex-1 min-w-0">
                                                         <div className="w-8 h-8 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[#6000FF] flex-shrink-0 overflow-hidden">
                                                             {item.user?.avatar ? (
-                                                                <img src={item.user.avatar} alt="" className="w-full h-full object-cover" />
+                                                                <img src={resolveImageUrl(item.user.avatar)} alt="" className="w-full h-full object-cover" />
                                                             ) : (
                                                                 <span className="text-[10px] font-bold">{item.user?.username?.charAt(0)?.toUpperCase() || '👤'}</span>
                                                             )}
@@ -451,7 +487,15 @@ export default function Feed() {
                                                         <MessageCircle size={16} className="text-gray-600 hover:text-black transition-colors" />
                                                         <span className="text-xs font-bold text-gray-600">{itemComments}</span>
                                                     </button>
-                                                    <div className="ml-auto">
+                                                    <div className="ml-auto flex items-center gap-3">
+                                                        {String(item.user?.id) === String(currentUserId) && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); setDeleteConfirmPostId(item.id); }}
+                                                                className="text-[10px] font-black uppercase tracking-[0.15em] text-red-400 hover:text-red-600 transition-colors"
+                                                            >
+                                                                Eliminar
+                                                            </button>
+                                                        )}
                                                         <button
                                                             onClick={() => openDetail(item)}
                                                             className="text-[10px] font-black uppercase tracking-[0.15em] border-b-2 border-transparent hover:border-black transition-all"
@@ -744,6 +788,36 @@ export default function Feed() {
                 </div>
             )}
 
+            {/* Modal Confirmación Eliminar */}
+            {deleteConfirmPostId && (
+                <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl max-w-sm w-full p-6 text-center">
+                        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-50 flex items-center justify-center">
+                            <Trash2 size={24} className="text-red-500" />
+                        </div>
+                        <h3 className="text-lg font-black mb-2">Eliminar publicación</h3>
+                        <p className="text-sm text-gray-600 mb-6">¿Estás seguro? Esta acción no se puede deshacer.</p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteConfirmPostId(null)}
+                                disabled={isDeleting}
+                                className="flex-1 py-3 border-2 border-gray-200 rounded-md font-bold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleDeletePost}
+                                disabled={isDeleting}
+                                className="flex-1 py-3 bg-red-500 text-white rounded-md font-bold text-sm hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {isDeleting ? <span className="loading loading-spinner loading-sm" /> : <Trash2 size={16} />}
+                                {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Modal Detalle de Publicación */}
             {detailPost && (
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto">
@@ -810,29 +884,34 @@ export default function Feed() {
                                         {getCount(detailPost._count?.likes ?? detailPost.likes ?? detailPost.likesCount ?? 0)} likes
                                     </span>
                                 </button>
-                                <div className="flex items-center gap-2">
-                                    <MessageCircle size={20} className="text-gray-600" />
-                                    <span className="text-sm font-bold text-gray-600">
+                                <button onClick={() => commentInputRef.current?.focus()} className="flex items-center gap-2">
+                                    <MessageCircle size={20} className="text-gray-600 hover:text-black transition-colors" />
+                                    <span className="text-sm font-bold text-gray-600 hover:text-black transition-colors">
                                         {getCount(detailPost._count?.comments ?? detailPost.comments ?? detailPost.commentsCount ?? 0)} comentarios
                                     </span>
-                                </div>
+                                </button>
                             </div>
 
                             {/* Comentarios */}
-                            <div className="mb-4">
-                                <h4 className="text-sm font-black mb-4">Comentarios</h4>
+                            <div>
+                                <div className="flex items-center gap-2 mb-6">
+                                    <MessageCircle size={18} className="text-gray-600" />
+                                    <h4 className="text-sm font-black">
+                                        {getCount(detailPost._count?.comments ?? detailPost.comments ?? detailPost.commentsCount ?? 0)} Comentarios
+                                    </h4>
+                                </div>
 
                                 {commentsLoading ? (
-                                    <div className="flex justify-center py-4">
+                                    <div className="flex justify-center py-8">
                                         <div className="w-6 h-6 border-2 border-gray-200 border-t-black rounded-full animate-spin" />
                                     </div>
                                 ) : comments.length > 0 ? (
-                                    <div className="space-y-4 mb-6">
+                                    <div className="space-y-5 mb-6">
                                         {comments.map((comment: any) => {
                                             const isOwner = String(comment.user?.id) === String(currentUserId);
                                             return (
                                                 <div key={comment.id} className="flex gap-3">
-                                                    <Link href={comment.user?.id ? `/profile/${comment.user.id}` : '#'} className="flex-shrink-0">
+                                                    <Link href={comment.user?.id ? `/profile/${comment.user.id}` : '#'} className="flex-shrink-0 mt-1">
                                                         <div className="w-8 h-8 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[10px] font-bold text-[#6000FF] overflow-hidden">
                                                             {comment.user?.avatar ? (
                                                                 <img src={comment.user.avatar} alt="" className="w-full h-full object-cover" />
@@ -841,50 +920,65 @@ export default function Feed() {
                                                             )}
                                                         </div>
                                                     </Link>
-                                                    <div className="flex-1">
+                                                    <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2">
-                                                            <Link href={comment.user?.id ? `/profile/${comment.user.id}` : '#'} className="text-xs font-bold hover:underline">{comment.user?.username || 'Usuario'}</Link>
-                                                            <span className="text-[10px] text-gray-400">{formatDate(comment.createdAt)}</span>
+                                                            <Link href={comment.user?.id ? `/profile/${comment.user.id}` : '#'} className="text-xs font-bold hover:underline truncate">
+                                                                {comment.user?.username || 'Usuario'}
+                                                            </Link>
+                                                            <span className="text-[10px] text-gray-400 whitespace-nowrap">{formatDate(comment.createdAt)}</span>
                                                             {isOwner && (
                                                                 <button
                                                                     onClick={() => handleDeleteComment(comment.id)}
-                                                                    className="ml-auto text-gray-400 hover:text-red-500 transition-colors"
+                                                                    className="ml-auto text-gray-300 hover:text-red-500 transition-colors flex-shrink-0"
+                                                                    title="Eliminar comentario"
                                                                 >
-                                                                    <Trash2 size={14} />
+                                                                    <Trash2 size={13} />
                                                                 </button>
                                                             )}
                                                         </div>
-                                                        <p className="text-sm text-gray-600 mt-1">{comment.content}</p>
+                                                        <p className="text-sm text-gray-600 mt-1 leading-relaxed">{comment.content}</p>
                                                     </div>
                                                 </div>
                                             );
                                         })}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-gray-400 mb-6">No hay comentarios aún. Sé el primero en comentar.</p>
+                                    <div className="text-center py-8 border border-dashed border-gray-200 rounded-lg mb-6">
+                                        <MessageCircle size={28} className="mx-auto text-gray-300 mb-2" strokeWidth={1.5} />
+                                        <p className="text-sm text-gray-400 font-medium">No hay comentarios aún</p>
+                                        <p className="text-xs text-gray-300 mt-1">Sé el primero en comentar</p>
+                                    </div>
                                 )}
 
-                                <div className="flex gap-3 border-t border-gray-200 pt-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Escribe un comentario..."
-                                        value={commentText}
-                                        onChange={(e) => setCommentText(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                handleSubmitComment();
-                                            }
-                                        }}
-                                        className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-md focus:border-black focus:outline-none font-medium text-sm"
-                                    />
-                                    <button
-                                        onClick={handleSubmitComment}
-                                        disabled={!commentText.trim() || isSubmittingComment}
-                                        className="px-4 py-2 bg-black text-white rounded-md font-bold text-sm hover:bg-[#333] transition-colors disabled:opacity-50 flex items-center gap-2"
-                                    >
-                                        {isSubmittingComment ? <span className="loading loading-spinner loading-sm" /> : <Send size={16} />}
-                                    </button>
+                                <div className="border-t border-gray-200 pt-4">
+                                    <div className="flex gap-3">
+                                        <input
+                                            ref={commentInputRef}
+                                            type="text"
+                                            placeholder="Escribe un comentario..."
+                                            value={commentText}
+                                            onChange={(e) => setCommentText(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    handleSubmitComment();
+                                                }
+                                            }}
+                                            className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-md focus:border-black focus:outline-none font-medium text-sm"
+                                        />
+                                        <button
+                                            onClick={handleSubmitComment}
+                                            disabled={!commentText.trim() || isSubmittingComment}
+                                            className="px-5 py-2.5 bg-black text-white rounded-md font-bold text-sm hover:bg-[#333] transition-colors disabled:opacity-50 flex items-center gap-2"
+                                        >
+                                            {isSubmittingComment ? (
+                                                <span className="loading loading-spinner loading-sm" />
+                                            ) : (
+                                                <Send size={16} />
+                                            )}
+                                            <span className="hidden sm:inline">Publicar</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

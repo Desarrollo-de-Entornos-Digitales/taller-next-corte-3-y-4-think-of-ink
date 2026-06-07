@@ -1,21 +1,35 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Navbar } from '../components/Navbar';
 import { Sidebar } from '../components/Sidebar';
 import { DollarSign, Star, MapPin, ChevronDown } from 'lucide-react';
 import { filterByPrice } from '@/lib/api/posts';
+import { resolveImageUrl } from '@/lib/utils';
+
+const safeStr = (v: any): string | undefined => {
+    if (v == null) return undefined;
+    if (typeof v === 'string') return v;
+    if (typeof v === 'object' && v.name) return v.name;
+    return String(v);
+};
 
 interface PriceResult {
     id: string;
     name: string;
     logoUrl?: string;
     location?: string;
-    category?: string;
+    category?: string | { id: string; name: string; description?: string };
     minPrice: number;
     maxPrice: number;
     rating: number;
     reviews: number;
+    studioId?: string;
+    userId?: string;
+    studio?: any;
+    tattooStyle?: any;
+    priceRange?: any;
 }
 
 const PRESET_RANGES = [
@@ -50,10 +64,19 @@ const MOCK_RESULTS: PriceResult[] = [
     { id: 'm10', name: 'Master Ink Collective', logoUrl: '', location: 'Medellín, Colombia', category: 'Tatuador', minPrice: 1200000, maxPrice: 1500000, rating: 4.9, reviews: 167 },
 ];
 
-const formatPrice = (v: number) => {
-    if (v >= 1000000) return `$${(v / 1000000).toFixed(1).replace('.0', '')}M`;
-    if (v >= 1000) return `$${(v / 1000).toFixed(0).replace('.0', '')}K`;
-    return `$${v.toLocaleString('es-CO')}`;
+const getItemLink = (item: PriceResult): string => {
+    if (item.studioId) return `/studio/${item.studioId}`;
+    if (item.userId) return `/profile/${item.userId}`;
+    if (item.category?.toLowerCase() === 'estudio') return `/studio/${item.id}`;
+    return `/profile/${item.id}`;
+};
+
+const formatPrice = (v: any): string => {
+    if (v == null || isNaN(Number(v))) return '$0';
+    const num = Number(v);
+    if (num >= 1000000) return `$${(num / 1000000).toFixed(1).replace('.0', '')}M`;
+    if (num >= 1000) return `$${(num / 1000).toFixed(0).replace('.0', '')}K`;
+    return `$${num.toLocaleString('es-CO')}`;
 };
 
 const DefaultStudioLogo = () => (
@@ -92,7 +115,25 @@ export default function PriceRangePage() {
         setError(null);
         try {
             const data = await filterByPrice(minPrice, maxPrice, token);
-            const arr = Array.isArray(data) ? data : data.data || data.results || [];
+            const raw = Array.isArray(data) ? data : data.data || data.results || [];
+            const arr = raw.map((r: any) => ({
+                ...r,
+                id: r.id || r._id || '',
+                name: r.name || safeStr(r.studio?.name) || '',
+                location: safeStr(r.location) || '',
+                minPrice: Number(r.minPrice ?? r.min_price ?? 0),
+                maxPrice: Number(r.maxPrice ?? r.max_price ?? 0),
+                rating: Number(r.rating ?? 0),
+                reviews: Number(r.reviews ?? 0),
+                logoUrl: r.logoUrl || '',
+                category: safeStr(r.category?.name ?? r.category),
+                studioId: r.studioId || r.studio?._id || r.studio?.id,
+                userId: r.userId || r.user?._id || r.user?.id,
+                studio: undefined,
+                tattooStyle: undefined,
+                priceRange: undefined,
+                user: undefined,
+            }));
             if (arr.length > 0) {
                 applySort(arr);
             } else {
@@ -257,14 +298,15 @@ export default function PriceRangePage() {
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                                 {results.map((item) => (
-                                    <div
+                                    <Link
                                         key={item.id}
-                                        className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:border-black transition-colors group"
+                                        href={getItemLink(item)}
+                                        className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:border-black transition-colors group block"
                                     >
                                         <div className="aspect-[4/3] bg-gray-50 overflow-hidden">
                                             {item.logoUrl ? (
                                                 <img
-                                                    src={item.logoUrl}
+                                                    src={resolveImageUrl(item.logoUrl)}
                                                     alt={item.name}
                                                     className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                                                 />
@@ -284,9 +326,9 @@ export default function PriceRangePage() {
                                             )}
 
                                             <div className="flex items-center gap-2 mb-3">
-                                                {item.category && (
+                                                {safeStr(item.category) && (
                                                     <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded">
-                                                        {item.category}
+                                                        {safeStr(item.category)}
                                                     </span>
                                                 )}
                                                 <span className="text-[10px] font-black uppercase tracking-widest bg-black/5 px-2 py-0.5 rounded">
@@ -297,14 +339,14 @@ export default function PriceRangePage() {
                                             <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                                                 <span className="text-xs font-bold text-gray-600 flex items-center gap-1">
                                                     <Star size={13} className="text-yellow-500 fill-yellow-500" />
-                                                    {item.rating?.toFixed(1) || '—'}
+                                                    {typeof item.rating === 'number' ? item.rating.toFixed(1) : '—'}
                                                 </span>
                                                 <span className="text-[10px] text-gray-400 font-medium">
                                                     {item.reviews || 0} reseñas
                                                 </span>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         )}

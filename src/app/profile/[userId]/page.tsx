@@ -38,7 +38,10 @@ export default function PublicProfilePage() {
     const getCount = (v: any): number => typeof v === 'number' ? v : (Array.isArray(v) ? v.length : 0);
 
     useEffect(() => {
-        if (!userId) return;
+        if (!userId || userId === 'undefined') {
+            router.push('/feed');
+            return;
+        }
         const token = localStorage.getItem('token') || undefined;
         const load = async () => {
             try {

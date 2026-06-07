@@ -2,6 +2,10 @@ export function resolveImageUrl(url: string | null | undefined): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     if (url.startsWith('data:')) return url;
+    if (url.startsWith('blob:')) return url;
+    // Mock/public images served by Next.js directly
+    if (url.startsWith('/images/')) return url;
+    // API-uploaded images need base URL
     const base = process.env.NEXT_PUBLIC_API_URL || '';
     const separator = url.startsWith('/') ? '' : '/';
     return `${base}${separator}${url}`;
