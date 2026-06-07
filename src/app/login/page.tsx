@@ -32,6 +32,7 @@ export default function Login() {
         {
             label: 'Correo electrónico',
             type: 'email',
+            name: 'email', // <-- AGREGADO: Para identificación exacta en pruebas y accesibilidad
             placeholder: 'usuario@gmail.com',
             value: email,
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
@@ -40,6 +41,7 @@ export default function Login() {
         {
             label: 'Contraseña',
             type: 'password',
+            name: 'password', // <-- AGREGADO: Para identificación exacta en pruebas y accesibilidad
             placeholder: '••••••••',
             value: password,
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value),
