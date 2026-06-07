@@ -124,6 +124,7 @@ export default function Register() {
                                     <button
                                         key={roleOption}
                                         type="button"
+                                        data-cy={`role-${roleOption === 'Usuario' ? 'user' : 'artist'}`}
                                         onClick={() => setRole(roleOption)}
                                         className={`py-4 px-3 rounded-md border-2 font-bold text-sm transition-all ${
                                             role === roleOption
@@ -141,6 +142,7 @@ export default function Register() {
                         <Input
                             label="Nombre completo"
                             type="text"
+                            name="fullName"
                             placeholder=""
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
@@ -151,6 +153,7 @@ export default function Register() {
                         <Input
                             label="Nombre de usuario"
                             type="text"
+                            name="username"
                             placeholder=""
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
@@ -161,6 +164,7 @@ export default function Register() {
                         <Input
                             label="Correo electrónico"
                             type="email"
+                            name="email"
                             placeholder=""
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -171,6 +175,7 @@ export default function Register() {
                         <Input
                             label="Contraseña"
                             type="password"
+                            name="password"
                             placeholder=""
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -181,6 +186,7 @@ export default function Register() {
                         <Input
                             label="Confirmar contraseña"
                             type="password"
+                            name="confirmPassword"
                             placeholder=""
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -191,6 +197,7 @@ export default function Register() {
                         <Input
                             label="Ubicación"
                             type="text"
+                            name="location"
                             placeholder=""
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
@@ -202,6 +209,7 @@ export default function Register() {
                             <input
                                 type="checkbox"
                                 id="terms"
+                                data-cy="checkbox-terms"
                                 checked={termsAccepted}
                                 onChange={(e) => setTermsAccepted(e.target.checked)}
                                 className="w-4 h-4 rounded border-2 border-[#D9D9D9] cursor-pointer accent-black"
@@ -209,7 +217,7 @@ export default function Register() {
                             <label
                                 htmlFor="terms"
                                 className="text-xs font-medium text-[#474747] cursor-pointer"
-                            >
+                            />
                                 Acepto los Términos de servicio y la Política de privacidad.
                             </label>
                         </div>
