@@ -10,6 +10,7 @@ import { TattooCard } from './components/TattooCard';
 import { ArtistCard } from './components/ArtistCard';
 import { StudioCard } from './components/StudioCard';
 import { getAllPosts, normalizePostsResponse } from '@/lib/api/posts';
+import { resolveImageUrl } from '@/lib/utils';
 
 const CATEGORIES = [
     'Todas', 'Blackwork', 'Realismo', 'Fine Line', 'Tradicional',
@@ -56,7 +57,10 @@ export default function CategoriesPage() {
                 const token = localStorage.getItem('token');
                 if (!token) return;
                 const response = await getAllPosts(token);
-                const postsArray = normalizePostsResponse(response);
+                const postsArray = normalizePostsResponse(response).map(p => ({
+                    ...p,
+                    imageUrl: resolveImageUrl(p.imageUrl),
+                }));
                 setAllPosts(postsArray);
             } catch (err) {
                 console.error('Error fetching posts:', err);

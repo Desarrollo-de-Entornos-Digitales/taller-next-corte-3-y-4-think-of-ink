@@ -3,7 +3,7 @@
 import { MoreVertical } from 'lucide-react';
 import { UserPost } from '@/lib/types';
 import { PostStats } from './PostStats';
-import { formatDate } from '@/lib/utils';
+import { formatDate, resolveImageUrl } from '@/lib/utils';
 
 interface UserPostCardProps {
     post: UserPost;
@@ -50,7 +50,7 @@ export const UserPostCard = ({ post, onDeleteClick, isDeleting = false }: UserPo
             {post.imageUrl && (
                 <div className="w-full aspect-[2.5/1] bg-gray-200 overflow-hidden">
                     <img
-                        src={post.imageUrl}
+                        src={resolveImageUrl(post.imageUrl)}
                         alt={post.title}
                         className="w-full h-full object-cover"
                     />

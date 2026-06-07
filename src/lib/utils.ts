@@ -1,3 +1,14 @@
+export function resolveImageUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('data:')) return url;
+    const base = process.env.NEXT_PUBLIC_API_URL || '';
+    const separator = url.startsWith('/') ? '' : '/';
+    return `${base}${separator}${url}`;
+}
+
+export const PLACEHOLDER_IMAGE = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22300%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20fill%3D%22%23f3f4f6%22%20width%3D%22400%22%20height%3D%22300%22%2F%3E%3Cpath%20d%3D%22M160%20120h80v60h-80z%22%20fill%3D%22%23d1d5db%22%2F%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%22150%22%20r%3D%2220%22%20fill%3D%22%239ca3af%22%2F%3E%3C%2Fsvg%3E';
+
 export const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     const now = new Date();

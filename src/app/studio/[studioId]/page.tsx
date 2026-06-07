@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, MapPin, X, Camera, Globe, Star } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, resolveImageUrl } from '@/lib/utils';
 import { MOCK_STUDIOS, getMockPostsForStudio } from '@/lib/mock-profiles';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -54,7 +54,7 @@ export default function StudioProfilePage() {
                     id: post.id,
                     title: post.title || 'Trabajo',
                     content: post.content || '',
-                    imageUrl: post.imageUrl,
+                    imageUrl: resolveImageUrl(post.imageUrl),
                     likesCount: getCount(post._count?.likes ?? post.likes ?? post.likesCount ?? 0),
                     commentsCount: getCount(post._count?.comments ?? post.comments ?? post.commentsCount ?? 0),
                     createdAt: post.createdAt || new Date().toISOString(),

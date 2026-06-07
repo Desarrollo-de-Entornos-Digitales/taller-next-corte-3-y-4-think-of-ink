@@ -10,6 +10,7 @@ import { UserPostCard } from '../components/UserPostCard';
 import { DeletePostModal } from '../components/DeletePostModal';
 import { UserProfile, UserPost } from '@/lib/types';
 import { getMyPosts, deletePost, normalizePostsResponse } from '@/lib/api/posts';
+import { resolveImageUrl } from '@/lib/utils';
 
 export default function MyPostsPage() {
     const router = useRouter();
@@ -71,7 +72,7 @@ export default function MyPostsPage() {
                     id: post.id,
                     title: post.title || 'Nueva publicación',
                     content: post.content || '',
-                    imageUrl: post.imageUrl,
+                    imageUrl: resolveImageUrl(post.imageUrl),
                     location: post.location,
                     postType: post.postType,
                     user: {

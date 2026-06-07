@@ -7,7 +7,7 @@ import { Sidebar } from '@/app/components/Sidebar';
 import { Heart, MessageCircle, MapPin, X, Globe, Camera } from 'lucide-react';
 import { getMyPosts, normalizePostsResponse } from '@/lib/api/posts';
 import { getUserProfile } from '@/lib/api/users';
-import { formatDate } from '@/lib/utils';
+import { formatDate, resolveImageUrl } from '@/lib/utils';
 
 interface GalleryPost {
     id: string;
@@ -85,7 +85,7 @@ export default function ProfilePage() {
                     typeof v === 'number' ? v : (Array.isArray(v) ? v.length : 0);
                 const mapped: GalleryPost[] = postsArray.map((p: any) => ({
                     id: p.id, title: p.title || 'Nueva publicación',
-                    content: p.content || '', imageUrl: p.imageUrl,
+                    content: p.content || '', imageUrl: resolveImageUrl(p.imageUrl),
                     likes: getCount(p._count?.likes ?? p.likes ?? p.likesCount ?? 0),
                     comments: getCount(p._count?.comments ?? p.comments ?? p.commentsCount ?? 0),
                     user: { id: p.user?.id || '', username: p.user?.username || username },

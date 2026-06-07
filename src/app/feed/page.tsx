@@ -1,20 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, useCallback } from 'react';
-import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark, Send, ChevronLeft, Trash2 } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark, Send, ChevronLeft, Trash2, AlertCircle } from 'lucide-react';
 
 import { Navbar } from '../components/Navbar';
 import { Sidebar } from '../components/Sidebar';
 
 import { InfoCard } from './ui/InfoCard';
 import { getAllPosts, createPost, normalizePostsResponse, likePost, getComments, createComment, deleteComment } from '@/lib/api/posts';
-import { formatDate } from '@/lib/utils';
+import { formatDate, resolveImageUrl } from '@/lib/utils';
 import { MOCK_FEED_POSTS } from '@/lib/mock-profiles';
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_SIZE = 10 * 1024 * 1024;
 
 type TabKey = 'para-ti' | 'recientes' | 'siguiendo';
 
 export default function Feed() {
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [allPosts, setAllPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -26,7 +30,9 @@ export default function Feed() {
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
     const [location, setLocation] = useState('');
-    const [images, setImages] = useState<string[]>([]);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>('');
+    const [uploadError, setUploadError] = useState<string>('');
     const [isPublishing, setIsPublishing] = useState(false);
     const [username, setUsername] = useState('Usuario Regular');
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
@@ -49,7 +55,11 @@ export default function Feed() {
                 return;
             }
             const response = await getAllPosts(token);
-            const postsArray = normalizePostsResponse(response);
+            const postsArray = normalizePostsResponse(response).map(p => {
+                const resolved = resolveImageUrl(p.imageUrl);
+                if (p.imageUrl) console.log('[Feed] imageUrl:', p.imageUrl, '→', resolved);
+                return { ...p, imageUrl: resolved };
+            });
             setAllPosts(postsArray);
             const liked = new Set<string>();
             for (const p of postsArray) {
@@ -106,21 +116,43 @@ export default function Feed() {
     const end = start + itemsPerPage;
     const currentItems = displayPosts.slice(start, end);
 
+    const validateFile = (file: File): string | null => {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return 'Formato no válido. Solo se aceptan JPG, PNG y WebP.';
+        }
+        if (file.size > MAX_SIZE) {
+            return 'El archivo es demasiado grande. Máximo 10MB.';
+        }
+        return null;
+    };
+
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
-        if (files) {
-            Array.from(files).forEach((file) => {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    setImages((prev) => [...prev, event.target?.result as string]);
-                };
-                reader.readAsDataURL(file);
-            });
+        setUploadError('');
+        if (files && files.length > 0) {
+            const file = files[0];
+            const error = validateFile(file);
+            if (error) {
+                setUploadError(error);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+            if (imagePreview && imagePreview.startsWith('blob:')) {
+                URL.revokeObjectURL(imagePreview);
+            }
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
         }
     };
 
-    const removeImage = (index: number) => {
-        setImages((prev) => prev.filter((_, i) => i !== index));
+    const removeImage = () => {
+        if (imagePreview && imagePreview.startsWith('blob:')) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        setImageFile(null);
+        setImagePreview('');
+        setUploadError('');
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const handlePublish = async () => {
@@ -130,6 +162,7 @@ export default function Feed() {
         }
 
         setIsPublishing(true);
+        setUploadError('');
 
         try {
             const token = localStorage.getItem('token');
@@ -138,32 +171,40 @@ export default function Feed() {
                 return;
             }
 
-            // Usar el nuevo servicio con endpoint correcto
-            await createPost(
-                {
-                    content: description,
-                    category: { name: category },
-                    location: location,
-                    imageUrl: images.length > 0 ? images[0] : null,
-                    postType: postType,
-                    title: title,
-                },
-                token
-            );
+            if (imageFile) {
+                const formData = new FormData();
+                formData.append('file', imageFile);
+                formData.append('title', title);
+                formData.append('content', description);
+                formData.append('category', JSON.stringify({ name: category }));
+                if (location) formData.append('location', location);
+                formData.append('postType', postType);
+                await createPost(formData, token);
+            } else {
+                await createPost(
+                    {
+                        content: description,
+                        category: { name: category },
+                        location: location,
+                        postType: postType,
+                        title: title,
+                    },
+                    token
+                );
+            }
 
-            alert('Publicación creada con éxito!');
+            removeImage();
             setTitle('');
             setDescription('');
             setCategory('');
             setLocation('');
-            setImages([]);
             setPostType('Diseño');
             setShowNewPostModal(false);
 
             await fetchPosts();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
-            alert('Error al publicar. Intenta nuevamente.');
+            setUploadError(error?.message || 'Error al publicar. Intenta nuevamente.');
         } finally {
             setIsPublishing(false);
         }
@@ -573,43 +614,55 @@ export default function Feed() {
                                 </div>
 
                                 <div>
-                                    <label className="text-sm font-bold block mb-2">Imágenes</label>
-                                    <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-black transition-colors cursor-pointer relative">
-                                        <input
-                                            type="file"
-                                            multiple
-                                            accept="image/*"
-                                            onChange={handleImageUpload}
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
-                                        />
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Upload size={28} strokeWidth={1.5} />
-                                            <p className="text-sm font-bold">
-                                                Arrastra imágenes o selecciona archivos
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                JPG, PNG hasta 10MB
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <label className="text-sm font-bold block mb-2">Imagen</label>
 
-                                    {images.length > 0 && (
-                                        <div className="mt-3 grid grid-cols-3 gap-2">
-                                            {images.map((image, index) => (
-                                                <div key={index} className="relative group">
-                                                    <img
-                                                        src={image}
-                                                        alt={`Preview ${index}`}
-                                                        className="w-full h-16 object-cover rounded-md border border-gray-200"
-                                                    />
-                                                    <button
-                                                        onClick={() => removeImage(index)}
-                                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                </div>
-                                            ))}
+                                    {uploadError && (
+                                        <div className="mb-3 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                                            <AlertCircle size={16} className="text-red-500 flex-shrink-0" />
+                                            <p className="text-xs font-medium text-red-600">{uploadError}</p>
+                                        </div>
+                                    )}
+
+                                    {imagePreview ? (
+                                        <div className="relative group">
+                                            <img
+                                                src={imagePreview}
+                                                alt="Preview"
+                                                className="w-full h-32 object-cover rounded-md border border-gray-200"
+                                            />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors rounded-md flex items-center justify-center gap-3">
+                                                <button
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black text-xs font-bold px-4 py-2 rounded-md hover:bg-gray-100"
+                                                >
+                                                    Reemplazar
+                                                </button>
+                                                <button
+                                                    onClick={removeImage}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white text-xs font-bold px-4 py-2 rounded-md hover:bg-red-600"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-black transition-colors cursor-pointer relative">
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept=".jpg,.jpeg,.png,.webp"
+                                                onChange={handleImageUpload}
+                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Upload size={28} strokeWidth={1.5} />
+                                                <p className="text-sm font-bold">
+                                                    Arrastra una imagen o selecciona archivo
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    JPG, PNG, WebP — Máximo 10MB
+                                                </p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -658,30 +711,15 @@ export default function Feed() {
                                             </>
                                         )}
 
-                                        {images.length > 0 && (
-                                            <div
-                                                className={`grid gap-1 ${
-                                                    images.length > 1
-                                                        ? 'grid-cols-3'
-                                                        : 'grid-cols-1'
-                                                }`}
-                                            >
-                                                {images.map((img, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        className={`bg-gray-200 rounded flex items-center justify-center overflow-hidden ${
-                                                            images.length === 1
-                                                                ? 'aspect-[2/1]'
-                                                                : 'aspect-square'
-                                                        }`}
-                                                    >
-                                                        <img
-                                                            src={img}
-                                                            alt={`Preview ${idx}`}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
-                                                ))}
+                                        {imagePreview && (
+                                            <div className="grid gap-1 grid-cols-1">
+                                                <div className="bg-gray-200 rounded flex items-center justify-center overflow-hidden aspect-[2.5/1]">
+                                                    <img
+                                                        src={imagePreview}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
                                             </div>
                                         )}
 

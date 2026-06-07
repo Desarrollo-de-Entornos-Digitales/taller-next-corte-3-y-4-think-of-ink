@@ -4,16 +4,18 @@
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+console.log('API_URL:', process.env.NEXT_PUBLIC_API_URL); // temporal
 
 
 interface FetchOptions {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     body?: any;
     token?: string;
+    isFormData?: boolean;
 }
 
 async function apiCall(endpoint: string, options: FetchOptions = {}) {
-    const { method = 'GET', body, token } = options;
+    const { method = 'GET', body, token, isFormData } = options;
 
     const headers: HeadersInit = {};
 
@@ -21,7 +23,7 @@ async function apiCall(endpoint: string, options: FetchOptions = {}) {
         headers.Authorization = `Bearer ${token}`;
     }
 
-    if (body) {
+    if (body && !isFormData) {
         headers['Content-Type'] = 'application/json';
     }
 
@@ -31,7 +33,7 @@ async function apiCall(endpoint: string, options: FetchOptions = {}) {
     };
 
     if (body) {
-        config.body = JSON.stringify(body);
+        config.body = isFormData ? body : JSON.stringify(body);
     }
 
     let response: Response;
@@ -88,23 +90,19 @@ export async function getMyPosts(token: string) {
 
 /**
  * Crea una nueva publicación
+ * Si postData es FormData, envía con multipart/form-data (para subida de imagen)
  */
 export async function createPost(
-    postData: {
-        content: string;
-        category?: { name: string };
-        location?: string;
-        imageUrl?: string | null;
-        title?: string;
-        postType?: string;
-    },
+    postData: Record<string, any> | FormData,
     token: string
 ) {
     try {
+        const isFormData = postData instanceof FormData;
         return await apiCall('/posts', {
             method: 'POST',
             body: postData,
             token,
+            isFormData,
         });
     } catch (error) {
         console.error('Error creating post:', error);

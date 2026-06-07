@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, MapPin, X, Globe, Camera, Briefcase, ExternalLink } from 'lucide-react';
 import { getPublicProfile, getPostsByUser } from '@/lib/api/users';
-import { formatDate } from '@/lib/utils';
+import { formatDate, resolveImageUrl } from '@/lib/utils';
 import { MOCK_USERS, getMockPostsForUser } from '@/lib/mock-profiles';
 
 interface Post {
@@ -56,7 +56,7 @@ export default function PublicProfilePage() {
                     id: post.id,
                     title: post.title || 'Nueva publicación',
                     content: post.content || '',
-                    imageUrl: post.imageUrl,
+                    imageUrl: resolveImageUrl(post.imageUrl),
                     likesCount: getCount(post._count?.likes ?? post.likes ?? post.likesCount ?? 0),
                     commentsCount: getCount(post._count?.comments ?? post.comments ?? post.commentsCount ?? 0),
                     createdAt: post.createdAt || new Date().toISOString(),
