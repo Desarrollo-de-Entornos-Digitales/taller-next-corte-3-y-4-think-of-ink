@@ -217,7 +217,7 @@ export default function Register() {
                             <label
                                 htmlFor="terms"
                                 className="text-xs font-medium text-[#474747] cursor-pointer"
-                            />
+                            >
                                 Acepto los Términos de servicio y la Política de privacidad.
                             </label>
                         </div>

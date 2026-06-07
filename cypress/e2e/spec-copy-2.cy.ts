@@ -3,7 +3,7 @@ describe('Pruebas del Formulario de Registro', () => {
         // Interceptamos la petición POST para simular la respuesta del backend
         cy.intercept('POST', '**/auth/register*', {
             statusCode: 201,
-            body: { message: 'Usuario creado con éxito' }
+            body: { message: 'Usuario creado con éxito' },
         }).as('registerRequest');
 
         // Visitamos directamente la página de registro
@@ -24,7 +24,10 @@ describe('Pruebas del Formulario de Registro', () => {
         // 1. Seleccionar Rol con el nuevo data-cy dinámico
         cy.get('[data-cy="role-user"]').click();
 
-        // 2. Diligenciar el formulario usando los atributos 'name' que agregamos
+        // Aseguramos que React procesó el clic y actualizó el estado antes de continuar
+        cy.get('[data-cy="role-user"]').should('have.class', 'bg-black');
+
+        // 2. Diligenciar el formulario usando los atributos 'name'
         cy.get('input[name="fullName"]').type('Carlos Gómez');
         cy.get('input[name="username"]').type('carlosg');
         cy.get('input[name="email"]').type('carlos@example.com');
@@ -43,7 +46,9 @@ describe('Pruebas del Formulario de Registro', () => {
 
         // 6. Verificar que apareció el mensaje de éxito en el alert
         cy.then(() => {
-            expect(alertStub.getCall(0)).to.be.calledWith('Cuenta creada con éxito. Ahora puedes iniciar sesión.');
+            expect(alertStub.getCall(0)).to.be.calledWith(
+                'Cuenta creada con éxito. Ahora puedes iniciar sesión.'
+            );
         });
 
         // 7. Asegurar que Next.js redirigió correctamente al Login
@@ -54,21 +59,28 @@ describe('Pruebas del Formulario de Registro', () => {
         const alertStub = cy.stub();
         cy.on('window:alert', alertStub);
 
+        // 1. Seleccionar Rol y esperar a que cambie el estado en React
         cy.get('[data-cy="role-user"]').click();
+        cy.get('[data-cy="role-user"]').should('have.class', 'bg-black');
+
+        // 2. Rellenar campos del formulario
         cy.get('input[name="fullName"]').type('Carlos Gómez');
         cy.get('input[name="username"]').type('carlosg');
         cy.get('input[name="email"]').type('carlos@example.com');
-        
-        // Ponemos contraseñas distintas a propósito
+
+        // Ponemos contraseñas distintas a propósito para forzar el error
         cy.get('input[name="password"]').type('SecurePass123');
         cy.get('input[name="confirmPassword"]').type('Diferente123');
-        
+
         cy.get('input[name="location"]').type('Cali, Colombia');
         cy.get('[data-cy="checkbox-terms"]').check();
 
-        cy.get('button[type="submit"]').click().then(() => {
-            // Verifica que saltó tu validación de contraseñas
-            expect(alertStub.getCall(0)).to.be.calledWith('Las contraseñas no coinciden');
-        });
+        // 3. Enviar el formulario
+        cy.get('button[type="submit"]')
+            .click()
+            .then(() => {
+                // Verifica que saltó tu validación de contraseñas y no la de selección de rol
+                expect(alertStub.getCall(0)).to.be.calledWith('Las contraseñas no coinciden');
+            });
     });
 });
