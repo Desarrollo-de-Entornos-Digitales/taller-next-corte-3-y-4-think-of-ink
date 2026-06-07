@@ -9,24 +9,23 @@ describe('Pruebas de la Página de Login', () => {
         cy.intercept('POST', '**/auth/login*', {
             statusCode: 200,
             body: {
-                access_token: 'fake-jwt-token-12345'
-            }
+                access_token: 'fake-jwt-token-12345',
+            },
         }).as('loginRequest');
 
-        // 2. Diligenciar los campos usando selectores basados en el atributo nativo 'type'
+        // 2. Diligenciar los campos usando los selectores por tipo
         cy.get('input[type="email"]').type('testuser@gmail.com');
         cy.get('input[type="password"]').type('SecurePassword123');
 
-        // 3. Hacer clic en el botón de envío
-        // Buscamos el botón por su tipo submit o el texto que le definiste en la propiedad
-        cy.get('button[type="submit"]').click();
+        // 3. CAMBIO CLAVE: Buscamos el botón nativo directamente por su texto visible en la pantalla
+        cy.contains('button', 'Entrar en la red').click();
 
         // 4. Esperar a que la petición simulada responda
         cy.wait('@loginRequest');
 
-        // 5. Verificar que el token se guardó correctamente en el localStorage de la app
-        cy.should(() => {
-            expect(localStorage.getItem('token')).to.eq('fake-jwt-token-12345');
+        // 5. Usamos cy.window() como comando padre antes de revisar el localStorage
+        cy.window().then((win) => {
+            expect(win.localStorage.getItem('token')).to.eq('fake-jwt-token-12345');
         });
 
         // 6. Verificar que la app intentó redirigir al feed
@@ -34,40 +33,42 @@ describe('Pruebas de la Página de Login', () => {
     });
 
     it('debería mostrar un mensaje de error si las credenciales son incorrectas', () => {
-        // 1. Interceptamos la petición simulando un error 401 de Backend (Unauthorized)
+        // 1. Interceptamos la petición simulando un error 401 de Backend
         cy.intercept('POST', '**/auth/login*', {
             statusCode: 401,
             body: {
-                message: 'Credenciales inválidas. Inténtalo de nuevo.'
-            }
+                message: 'Credenciales inválidas. Inténtalo de nuevo.',
+            },
         }).as('loginFailedRequest');
 
-        // Capturamos el alert nativo del navegador
+        // Preparamos el capturador del alert del navegador
         const alertStub = cy.stub();
         cy.on('window:alert', alertStub);
 
         // 2. Llenamos datos aleatorios equivocados
         cy.get('input[type="email"]').type('wronguser@gmail.com');
         cy.get('input[type="password"]').type('WrongPassword111');
-        
-        cy.get('button[type="submit"]').click();
 
-        // 3. Esperar que actúe el interceptor
+        // 3. CAMBIO CLAVE: Buscamos el botón por su texto aquí también
+        cy.contains('button', 'Entrar en la red').click();
+
+        // 4. Esperamos que actúe el interceptor de red
         cy.wait('@loginFailedRequest');
 
-        // 4. Validar que saltó el alert con el string exacto de tu catch
-        cy.then(() => {
-            expect(alertStub.getCall(0)).to.be.calledWith('Credenciales inválidas. Inténtalo de nuevo.');
+        // 5. Evaluamos el alert
+        cy.window().then(() => {
+            expect(alertStub.getCall(0)).to.be.calledWith(
+                'Credenciales inválidas. Inténtalo de nuevo.'
+            );
         });
-        
-        // 5. Garantizar que NO se guardó ningún token tramposo
-        cy.should(() => {
-            expect(localStorage.getItem('token')).to.be.null;
+
+        // 6. Usamos cy.window() para verificar que el token siga estando vacío (null)
+        cy.window().then((win) => {
+            expect(win.localStorage.getItem('token')).to.be.null;
         });
     });
 
     it('debería permitir navegar hacia la página de registro', () => {
-        // Probamos que tu componente Link de Next.js funcione con el data-cy que ya posee
         cy.get('[data-cy="link-to-register"]').click();
         cy.url().should('include', '/register');
     });

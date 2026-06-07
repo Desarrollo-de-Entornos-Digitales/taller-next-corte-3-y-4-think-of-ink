@@ -32,7 +32,7 @@ export default function Login() {
         {
             label: 'Correo electrónico',
             type: 'email',
-            name: 'email', // <-- AGREGADO: Para identificación exacta en pruebas y accesibilidad
+            name: 'email',
             placeholder: 'usuario@gmail.com',
             value: email,
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
@@ -41,7 +41,7 @@ export default function Login() {
         {
             label: 'Contraseña',
             type: 'password',
-            name: 'password', // <-- AGREGADO: Para identificación exacta en pruebas y accesibilidad
+            name: 'password',
             placeholder: '••••••••',
             value: password,
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value),
@@ -83,6 +83,7 @@ export default function Login() {
                     subtitle="Bienvenido de nuevo a la comunidad."
                     fields={loginFields}
                     buttonText="Entrar en la red"
+                    buttonDataCy="btn-login" // <-- CAMBIO AQUÍ: ID único para el botón de envío
                     onSubmit={handleLogin}
                     footer={
                         <div className="text-center">
