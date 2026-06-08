@@ -33,9 +33,9 @@ const MOCK_NOTIFICATIONS: Notification[] = [
     },
     {
         id: '4',
-        username: 'Sofía Toro',
+        username: 'Camila Sánchez',
         action: 'respondió tu comentario.',
-        avatar: 'S',
+        avatar: 'C',
         time: new Date(Date.now() - 24 * 60 * 60 * 1000),
         read: true,
     },

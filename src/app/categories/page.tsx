@@ -26,18 +26,23 @@ const ARTISTS = [
 ];
 
 const LOGO_MAP: Record<string, string> = {
-    'Estudio 79 Tattoo': '',
-    'La Vida Tattoo': '',
-    'Tinta Finita': '',
-    'Seven Ink Studio': '',
     'Ink Starter Studio': '/images/logos/ink-starter-studio.png',
     'Mini Tattoo Cali': '/images/logos/mini-tattoo-cali.png',
     'Fine Line Studio': '/images/logos/fine-line-studio.png',
     'Neo Art Tattoo': '/images/logos/neo-art-studio.png',
-    'Black House Tattoo': '/images/logos/black-house-tattoo.png',
+    'Black House Tattoo': '/images/logos/blackwork-studio.png',
     'Real Ink Tattoo': '/images/logos/real-ink-tattoo.png',
-    'Black Ink Studio': '/images/logos/black-house-tattoo.png',
+    'Premium Blackwork': '/images/logos/premium-blackwork.png',
+    'Artistic Cali': '/images/logos/artistic-cali.png',
+    'Elite Tattoo Studio': '/images/logos/elite-tattoo-studio.png',
+    'Master Ink Collective': '/images/logos/master-ink-collective.png',
+    'Black Ink Studio': '/images/logos/blackwork-studio.png',
+    'Neo Ink Art': '/images/logos/neo-art-studio.png',
+    'Golden Needle': '/images/logos/golden-needle.png',
+    'Urban Ink': '/images/logos/urban-ink.png',
 };
+
+const FALLBACK_LOGO = '/images/logos/ink-starter-studio.png';
 
 const STUDIOS = [
     { name: 'Ink Starter Studio', city: 'Cali, Colombia', rating: 4.9, studioId: 'ink-starter-studio' },
@@ -48,7 +53,7 @@ const STUDIOS = [
 
 const VIRAL_POSTS = [
     { id: '5', image: '/images/tattoos/tattoo-5.jpg', author: 'Ink Master', authorAvatar: 'I', title: 'Neo tradicional rosa y dagas', likes: 234, comments: 56, studioId: 'ink-master' },
-    { id: '6', image: '/images/tattoos/tattoo-6.jpg', author: 'Sofía Toro', authorAvatar: 'S', title: 'Lettering frase completa en espalda', likes: 189, comments: 42, userId: 'sofia-toro' },
+    { id: '6', image: '/images/tattoos/tattoo-6.jpg', author: 'Camila Sánchez', authorAvatar: 'C', title: 'Lettering frase completa en espalda', likes: 189, comments: 42, userId: 'camilasanchez' },
     { id: '7', image: '/images/tattoos/tattoo-7.jpg', author: 'Luis Rojas', authorAvatar: 'L', title: 'Color realismo ave exótica', likes: 312, comments: 78, userId: 'luis-rojas' },
 ];
 
@@ -64,6 +69,7 @@ export default function CategoriesPage() {
     const [allPosts, setAllPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+    const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -89,10 +95,30 @@ export default function CategoriesPage() {
     const handleLike = async (postId: string) => {
         const token = localStorage.getItem('token');
         if (!token) return;
+        // Optimistic update
+        const prevLiked = likedPosts.has(postId);
+        const currentDisplay = likeCounts[postId] ?? (() => {
+            const apiPost = allPosts.find((p) => p.id === postId);
+            if (apiPost) return getLikeCount(apiPost);
+            for (const p of [...VIRAL_POSTS, ...TOP_LIKED]) {
+                if (p.id === postId) return p.likes;
+            }
+            return 0;
+        })();
+        setLikedPosts((prev) => {
+            const next = new Set(prev);
+            if (prevLiked) next.delete(postId);
+            else next.add(postId);
+            return next;
+        });
+        setLikeCounts((prev) => ({
+            ...prev,
+            [postId]: currentDisplay + (prevLiked ? -1 : 1),
+        }));
         try {
             const result = await likePost(postId, token);
             const newLikesCount = result?.likesCount ?? result?.likes ?? result?._count?.likes ?? result?.count;
-            const nowLiked = result?.likedByCurrentUser ?? result?.isLiked ?? result?.liked ?? false;
+            const nowLiked = result?.likedByCurrentUser ?? result?.isLiked ?? result?.liked ?? !prevLiked;
             setLikedPosts((prev) => {
                 const next = new Set(prev);
                 if (nowLiked) next.add(postId);
@@ -100,14 +126,32 @@ export default function CategoriesPage() {
                 return next;
             });
             if (newLikesCount !== undefined) {
-                setAllPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === postId ? { ...p, likesCount: newLikesCount, _count: { ...p._count, likes: newLikesCount } } : p
-                    )
-                );
+                setLikeCounts((prev) => ({ ...prev, [postId]: newLikesCount }));
             }
+            setAllPosts((prev) =>
+                prev.map((p) => {
+                    if (p.id !== postId) return p;
+                    const currentCount = getLikeCount(p);
+                    const updatedCount = newLikesCount !== undefined
+                        ? newLikesCount
+                        : nowLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+                    return { ...p, likesCount: updatedCount, _count: { ...p._count, likes: updatedCount } };
+                })
+            );
         } catch (err) {
             console.error('Error toggling like:', err);
+            // Rollback on error
+            setLikedPosts((prev) => {
+                const next = new Set(prev);
+                if (prevLiked) next.add(postId);
+                else next.delete(postId);
+                return next;
+            });
+            setLikeCounts((prev) => {
+                const copy = { ...prev };
+                delete copy[postId];
+                return copy;
+            });
         }
     };
 
@@ -118,6 +162,15 @@ export default function CategoriesPage() {
     const getCommentCount = (p: any): number => {
         const v = p._count?.comments ?? p.comments ?? p.commentsCount ?? 0;
         return typeof v === 'number' ? v : (Array.isArray(v) ? v.length : 0);
+    };
+    const getLikeCountForDisplay = (postId: string): number => {
+        if (likeCounts[postId] !== undefined) return likeCounts[postId];
+        const apiPost = allPosts.find((p) => p.id === postId);
+        if (apiPost) return getLikeCount(apiPost);
+        for (const p of [...VIRAL_POSTS, ...TOP_LIKED]) {
+            if (p.id === postId) return p.likes;
+        }
+        return 0;
     };
 
     const filteredPosts = allPosts.filter((post) => {
@@ -208,7 +261,7 @@ export default function CategoriesPage() {
                                                     author={post.author}
                                                     authorAvatar={post.authorAvatar}
                                                     title={post.title}
-                                                    likes={post.likes}
+                                                    likes={getLikeCountForDisplay(post.id)}
                                                     comments={post.comments}
                                                     userId={post.userId || undefined}
                                                     studioId={post.studioId || undefined}
@@ -231,7 +284,7 @@ export default function CategoriesPage() {
                                                     author={post.author}
                                                     authorAvatar={post.authorAvatar}
                                                     title={post.title}
-                                                    likes={post.likes}
+                                                    likes={getLikeCountForDisplay(post.id)}
                                                     comments={post.comments}
                                                     userId={post.userId || undefined}
                                                     studioId={post.studioId || undefined}
@@ -280,7 +333,7 @@ export default function CategoriesPage() {
                                             name={studio.name}
                                             city={studio.city}
                                             rating={studio.rating}
-                                            image={LOGO_MAP[studio.name] || undefined}
+                                            image={LOGO_MAP[studio.name] || FALLBACK_LOGO}
                                             studioId={studio.studioId || undefined}
                                         />
                                     ))}

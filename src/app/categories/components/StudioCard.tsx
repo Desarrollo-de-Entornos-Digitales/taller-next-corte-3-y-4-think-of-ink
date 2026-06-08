@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
 import { Star, MapPin } from 'lucide-react';
 
 interface StudioCardProps {
@@ -12,7 +11,7 @@ interface StudioCardProps {
     studioId?: string;
 }
 
-const getInitials = (name: string) => name.charAt(0).toUpperCase();
+const FALLBACK_LOGO = '/images/logos/ink-starter-studio.png';
 
 export const StudioCard = ({ name, city, rating, image, studioId }: StudioCardProps) => {
     const Wrapper = studioId ? Link : 'div';
@@ -21,11 +20,11 @@ export const StudioCard = ({ name, city, rating, image, studioId }: StudioCardPr
     return (
         <Wrapper {...wrapperProps}>
             <div className="aspect-[16/9] bg-[#D9D9D9] relative overflow-hidden flex items-center justify-center">
-                {image ? (
-                    <img src={image} alt={name} className="w-full h-full object-contain p-6" />
-                ) : (
-                    <span className="text-4xl font-black text-gray-300 select-none">{getInitials(name)}</span>
-                )}
+                <img
+                    src={image || FALLBACK_LOGO}
+                    alt={name}
+                    className="w-full h-full object-contain p-6"
+                />
             </div>
 
             <div className="p-4">

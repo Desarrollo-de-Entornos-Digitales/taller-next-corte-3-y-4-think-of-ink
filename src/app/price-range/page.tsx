@@ -51,17 +51,44 @@ const MIN = 0;
 const MAX = 1500000;
 const STEP = 50000;
 
+const LOGO_MAP: Record<string, string> = {
+    'Ink Starter Studio': '/images/logos/ink-starter-studio.png',
+    'Mini Tattoo Cali': '/images/logos/mini-tattoo-cali.png',
+    'Fine Line Studio': '/images/logos/fine-line-studio.png',
+    'Neo Art Tattoo': '/images/logos/neo-art-studio.png',
+    'Black House Tattoo': '/images/logos/blackwork-studio.png',
+    'Real Ink Tattoo': '/images/logos/real-ink-tattoo.png',
+    'Premium Blackwork': '/images/logos/premium-blackwork.png',
+    'Artistic Cali': '/images/logos/artistic-cali.png',
+    'Elite Tattoo Studio': '/images/logos/elite-tattoo-studio.png',
+    'Master Ink Collective': '/images/logos/master-ink-collective.png',
+    'Black Ink Studio': '/images/logos/blackwork-studio.png',
+    'Neo Ink Art': '/images/logos/neo-art-studio.png',
+    'Golden Needle': '/images/logos/golden-needle.png',
+    'Urban Ink': '/images/logos/urban-ink.png',
+};
+
+const FALLBACK_LOGO = '/images/logos/ink-starter-studio.png';
+
+const getLogoForStudio = (name: string): string => {
+    if (!name) return FALLBACK_LOGO;
+    const key = Object.keys(LOGO_MAP).find(
+        (k) => k.toLowerCase() === name.toLowerCase()
+    );
+    return key ? LOGO_MAP[key] : FALLBACK_LOGO;
+};
+
 const MOCK_RESULTS: PriceResult[] = [
-    { id: 'm1', name: 'Ink Starter Studio', logoUrl: '/images/logos/ink-starter-studio.png', location: 'Cali, Colombia', category: 'Estudio', minPrice: 30000, maxPrice: 80000, rating: 4.5, reviews: 23 },
-    { id: 'm2', name: 'Mini Tattoo Cali', logoUrl: '/images/logos/mini-tattoo-cali.png', location: 'San Fernando, Cali', category: 'Tatuador', minPrice: 50000, maxPrice: 95000, rating: 4.3, reviews: 15 },
-    { id: 'm3', name: 'Fine Line Studio', logoUrl: '/images/logos/fine-line-studio.png', location: 'Granada, Cali', category: 'Estudio', minPrice: 120000, maxPrice: 280000, rating: 4.8, reviews: 42 },
-    { id: 'm4', name: 'Neo Art Tattoo', logoUrl: '/images/logos/neo-art-studio.png', location: 'Centro, Cali', category: 'Tatuador', minPrice: 150000, maxPrice: 290000, rating: 4.6, reviews: 31 },
-    { id: 'm5', name: 'Black House Tattoo', logoUrl: '/images/logos/black-house-tattoo.png', location: 'Granada, Cali', category: 'Estudio', minPrice: 350000, maxPrice: 550000, rating: 4.9, reviews: 78 },
-    { id: 'm6', name: 'Real Ink Tattoo', logoUrl: '/images/logos/real-ink-tattoo.png', location: 'Centro, Cali', category: 'Estudio', minPrice: 300000, maxPrice: 580000, rating: 4.7, reviews: 56 },
-    { id: 'm7', name: 'Premium Blackwork', logoUrl: '', location: 'San Antonio, Cali', category: 'Tatuador', minPrice: 650000, maxPrice: 950000, rating: 4.9, reviews: 102 },
-    { id: 'm8', name: 'Artistic Cali', logoUrl: '', location: 'Menga, Cali', category: 'Estudio', minPrice: 700000, maxPrice: 990000, rating: 4.8, reviews: 89 },
-    { id: 'm9', name: 'Elite Tattoo Studio', logoUrl: '', location: 'Bogotá, Colombia', category: 'Estudio', minPrice: 1100000, maxPrice: 1500000, rating: 5.0, reviews: 204 },
-    { id: 'm10', name: 'Master Ink Collective', logoUrl: '', location: 'Medellín, Colombia', category: 'Tatuador', minPrice: 1200000, maxPrice: 1500000, rating: 4.9, reviews: 167 },
+    { id: 'm1', name: 'Ink Starter Studio', logoUrl: LOGO_MAP['Ink Starter Studio'], location: 'Cali, Colombia', category: 'Estudio', minPrice: 30000, maxPrice: 80000, rating: 4.5, reviews: 23 },
+    { id: 'm2', name: 'Mini Tattoo Cali', logoUrl: LOGO_MAP['Mini Tattoo Cali'], location: 'San Fernando, Cali', category: 'Tatuador', minPrice: 50000, maxPrice: 95000, rating: 4.3, reviews: 15 },
+    { id: 'm3', name: 'Fine Line Studio', logoUrl: LOGO_MAP['Fine Line Studio'], location: 'Granada, Cali', category: 'Estudio', minPrice: 120000, maxPrice: 280000, rating: 4.8, reviews: 42 },
+    { id: 'm4', name: 'Neo Art Tattoo', logoUrl: LOGO_MAP['Neo Art Tattoo'], location: 'Centro, Cali', category: 'Tatuador', minPrice: 150000, maxPrice: 290000, rating: 4.6, reviews: 31 },
+    { id: 'm5', name: 'Black House Tattoo', logoUrl: LOGO_MAP['Black House Tattoo'], location: 'Granada, Cali', category: 'Estudio', minPrice: 350000, maxPrice: 550000, rating: 4.9, reviews: 78 },
+    { id: 'm6', name: 'Real Ink Tattoo', logoUrl: LOGO_MAP['Real Ink Tattoo'], location: 'Centro, Cali', category: 'Estudio', minPrice: 300000, maxPrice: 580000, rating: 4.7, reviews: 56 },
+    { id: 'm7', name: 'Premium Blackwork', logoUrl: LOGO_MAP['Premium Blackwork'], location: 'San Antonio, Cali', category: 'Tatuador', minPrice: 650000, maxPrice: 950000, rating: 4.9, reviews: 102 },
+    { id: 'm8', name: 'Artistic Cali', logoUrl: LOGO_MAP['Artistic Cali'], location: 'Menga, Cali', category: 'Estudio', minPrice: 700000, maxPrice: 990000, rating: 4.8, reviews: 89 },
+    { id: 'm9', name: 'Elite Tattoo Studio', logoUrl: LOGO_MAP['Elite Tattoo Studio'], location: 'Bogotá, Colombia', category: 'Estudio', minPrice: 1100000, maxPrice: 1500000, rating: 5.0, reviews: 204 },
+    { id: 'm10', name: 'Master Ink Collective', logoUrl: LOGO_MAP['Master Ink Collective'], location: 'Medellín, Colombia', category: 'Tatuador', minPrice: 1200000, maxPrice: 1500000, rating: 4.9, reviews: 167 },
 ];
 
 const getItemLink = (item: PriceResult): string => {
@@ -79,7 +106,7 @@ const formatPrice = (v: any): string => {
     return `$${num.toLocaleString('es-CO')}`;
 };
 
-const getInitials = (name: string) => name.charAt(0).toUpperCase();
+
 
 function filterMock(min: number, max: number): PriceResult[] {
     return MOCK_RESULTS.filter((r) => r.minPrice >= min && r.maxPrice <= max);
@@ -121,7 +148,7 @@ export default function PriceRangePage() {
                 maxPrice: Number(r.maxPrice ?? r.max_price ?? 0),
                 rating: Number(r.rating ?? 0),
                 reviews: Number(r.reviews ?? 0),
-                logoUrl: r.logoUrl || '',
+                logoUrl: r.logoUrl || getLogoForStudio(r.name),
                 category: safeStr(r.category?.name ?? r.category),
                 studioId: r.studioId || r.studio?._id || r.studio?.id,
                 userId: r.userId || r.user?._id || r.user?.id,
@@ -295,17 +322,11 @@ export default function PriceRangePage() {
                                         className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:border-black transition-colors group block"
                                     >
                                         <div className="aspect-[4/3] bg-gray-50 overflow-hidden flex items-center justify-center">
-                                            {item.logoUrl ? (
-                                                <img
-                                                    src={resolveImageUrl(item.logoUrl)}
-                                                    alt={item.name}
-                                                    className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                            ) : (
-                                                <span className="text-5xl font-black text-gray-300 select-none">
-                                                    {getInitials(item.name)}
-                                                </span>
-                                            )}
+                                            <img
+                                                src={resolveImageUrl(item.logoUrl || getLogoForStudio(item.name))}
+                                                alt={item.name}
+                                                className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                                            />
                                         </div>
 
                                         <div className="p-4">

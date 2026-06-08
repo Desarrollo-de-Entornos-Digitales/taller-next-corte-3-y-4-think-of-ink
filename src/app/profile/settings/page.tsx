@@ -10,8 +10,10 @@ import { SettingsFormField } from '../components/SettingsFormField';
 import { SocialMediaField } from '../components/SocialMediaField';
 import { AccountOption } from '../components/AccountOption';
 import { getUserProfile, updateUserProfile } from '@/lib/api/users';
+import { useUser } from '@/app/context/UserContext';
 
 export default function SettingsPage() {
+    const { refreshUser } = useUser();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -154,6 +156,8 @@ export default function SettingsPage() {
             localStorage.setItem('username', merged.username);
             if (merged.location) localStorage.setItem('location', merged.location);
             if (merged.profession) localStorage.setItem('profession', merged.profession);
+
+            refreshUser();
 
             alert('Cambios guardados con éxito');
         } catch (error: any) {

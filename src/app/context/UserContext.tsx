@@ -67,22 +67,24 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     const updateAvatar = (avatarUrl: string) => {
         const resolvedUrl = resolveImageUrl(avatarUrl);
-        setUser((prev) => (prev ? { ...prev, avatar: resolvedUrl } : null));
-        if (user) {
-            const updated = { ...user, avatar: resolvedUrl };
+        setUser((prev) => {
+            if (!prev) return prev;
+            const updated = { ...prev, avatar: resolvedUrl };
             localStorage.setItem('user', JSON.stringify(updated));
-        }
+            return updated;
+        });
     };
 
     const updateProfile = (profile: Partial<UserProfile>) => {
-        setUser((prev) => (prev ? { ...prev, ...profile } : null));
-        if (user) {
-            const updated = { ...user, ...profile };
+        setUser((prev) => {
+            if (!prev) return prev;
+            const updated = { ...prev, ...profile };
             localStorage.setItem('user', JSON.stringify(updated));
             if (profile.username) localStorage.setItem('username', profile.username);
             if (profile.location) localStorage.setItem('location', profile.location);
             if (profile.profession) localStorage.setItem('profession', profile.profession);
-        }
+            return updated;
+        });
     };
 
     return (

@@ -3,7 +3,7 @@ export const MOCK_USERS: Record<string, any> = {
         id: 'luis-rojas',
         username: 'Luis Rojas',
         name: 'Luis Rojas',
-        profession: 'Tatuador especialista en Realismo y Color',
+        profession: 'Especialista en Realismo y Color',
         bio: 'Especialista en tatuajes realistas a color.\n10 años de experiencia.\nDisponible para citas.',
         avatar: '',
         location: 'Cali, Colombia',
@@ -41,19 +41,19 @@ export const MOCK_USERS: Record<string, any> = {
         behance: '',
         website: '',
     },
-    'sofia-toro': {
-        id: 'sofia-toro',
-        username: 'Sofía Toro',
-        name: 'Sofía Toro',
-        profession: 'Lettering y Caligrafía',
-        bio: 'Especialista en lettering y caligrafía.\nCada trazo cuenta una historia.\nDisponible para proyectos personalizados.',
+    'camilasanchez': {
+        id: 'camilasanchez',
+        username: 'Camila Sánchez',
+        name: 'Camila Sánchez',
+        profession: 'Especialista en Lettering y Caligrafía',
+        bio: 'Especialista en Lettering y Caligrafía.\nCada trazo cuenta una historia.\nDiseños personalizados para proyectos únicos.\nDisponible para trabajos por encargo.',
         avatar: '',
         location: 'Medellín, Colombia',
         followersCount: 189,
         followingCount: 42,
-        instagram: 'instagram.com/sofiatoro.ink',
-        behance: 'behance.net/sofiatoro',
-        website: 'sofiatoro.com',
+        instagram: 'instagram.com/camilasanchez.ink',
+        behance: 'behance.net/camilasanchez',
+        website: '',
     },
 };
 
@@ -192,21 +192,21 @@ export const MOCK_STUDIOS: Record<string, any> = {
 
 export const MOCK_USER_POSTS: Record<string, any[]> = {
     'luis-rojas': [
-        { id: 'mock-lr-1', title: 'Color realismo ave exótica', content: 'Trabajo de realismo a color en antebrazo. Ave exótica con detalles en plumaje.', imageUrl: '/images/tattoos/tattoo-7.jpg', likesCount: 312, commentsCount: 78, createdAt: '2025-12-15T10:00:00Z' },
-        { id: 'mock-lr-2', title: 'Leopardo realismo', content: 'Realismo en blanco y negro de leopardo.', imageUrl: '', likesCount: 145, commentsCount: 23, createdAt: '2025-11-20T10:00:00Z' },
-        { id: 'mock-lr-3', title: 'Rostro hiperrealista', content: 'Retrato hiperrealista en escala de grises.', imageUrl: '', likesCount: 89, commentsCount: 12, createdAt: '2025-10-10T10:00:00Z' },
+        { id: 'mock-lr-1', title: 'Ave Fénix', content: 'Trabajo de realismo a color en antebrazo. Ave Fénix con detalles en plumaje.', imageUrl: '/images/tattoos/tattoo-7.jpg', likesCount: 312, commentsCount: 78, createdAt: '2025-12-15T10:00:00Z' },
+        { id: 'mock-lr-2', title: 'Leopardo realista', content: 'Realismo en blanco y negro de leopardo.', imageUrl: '/images/tattoos/tattoo-1.jpg', likesCount: 145, commentsCount: 23, createdAt: '2025-11-20T10:00:00Z' },
+        { id: 'mock-lr-3', title: 'Rostro hiperrealista', content: 'Retrato hiperrealista en escala de grises.', imageUrl: '/images/tattoos/tattoo-2.jpg', likesCount: 89, commentsCount: 12, createdAt: '2025-10-10T10:00:00Z' },
     ],
     'diana-cruz': [
         { id: 'mock-dc-1', title: 'Fine line rostro femenino', content: 'Fine line de rostro femenino en antebrazo. Líneas sutiles y elegantes.', imageUrl: '/images/tattoos/tattoo-10.jpg', likesCount: 398, commentsCount: 67, createdAt: '2026-01-10T10:00:00Z' },
-        { id: 'mock-dc-2', title: 'Corazón anatómico', content: 'Fine line de corazón anatómico con detalles botánicos.', imageUrl: '', likesCount: 234, commentsCount: 45, createdAt: '2025-12-01T10:00:00Z' },
+        { id: 'mock-dc-2', title: 'Corazón anatómico', content: 'Fine line de corazón anatómico con detalles botánicos.', imageUrl: '/images/tattoos/tattoo-4.jpg', likesCount: 234, commentsCount: 45, createdAt: '2025-12-01T10:00:00Z' },
     ],
     'pablo-gil': [
         { id: 'mock-pg-1', title: 'Tribal brazo geométrico', content: 'Manga tribal con diseño geométrico moderno. Líneas precisas y sombreado.', imageUrl: '/images/tattoos/tattoo-9.jpg', likesCount: 423, commentsCount: 89, createdAt: '2026-02-05T10:00:00Z' },
-        { id: 'mock-pg-2', title: 'Maya geométrico', content: 'Diseño maya con patrones geométricos contemporáneos.', imageUrl: '', likesCount: 167, commentsCount: 34, createdAt: '2026-01-15T10:00:00Z' },
+        { id: 'mock-pg-2', title: 'Maya geométrico', content: 'Diseño maya con patrones geométricos contemporáneos.', imageUrl: '/images/tattoos/tattoo-3.jpg', likesCount: 167, commentsCount: 34, createdAt: '2026-01-15T10:00:00Z' },
     ],
-    'sofia-toro': [
-        { id: 'mock-st-1', title: 'Lettering frase completa en espalda', content: 'Frase completa en lettering cursivo en la espalda. Caligrafía personalizada.', imageUrl: '/images/tattoos/tattoo-6.jpg', likesCount: 189, commentsCount: 42, createdAt: '2025-11-25T10:00:00Z' },
-        { id: 'mock-st-2', title: 'Nombre en script', content: 'Lettering script para nombre en antebrazo.', imageUrl: '', likesCount: 78, commentsCount: 15, createdAt: '2025-10-30T10:00:00Z' },
+    'camilasanchez': [
+        { id: 'mock-cs-1', title: 'Lettering frase completa en espalda', content: 'Frase completa en lettering cursivo en la espalda. Caligrafía personalizada.', imageUrl: '/images/tattoos/tattoo-6.jpg', likesCount: 189, commentsCount: 42, createdAt: '2025-11-25T10:00:00Z' },
+        { id: 'mock-cs-2', title: 'Astronauta minimalista', content: 'Astronauta minimalista en estilo fine line. Diseño sutil y elegante.', imageUrl: '/images/tattoos/tattoo-3.jpg', likesCount: 78, commentsCount: 15, createdAt: '2025-10-30T10:00:00Z' },
     ],
 };
 
@@ -234,7 +234,7 @@ export const MOCK_FEED_POSTS = [
     {
         id: 'mock-feed-2', title: 'Lettering frase completa en espalda', content: 'Frase completa en lettering cursivo en la espalda. Caligrafía personalizada para cada cliente.',
         imageUrl: '/images/tattoos/tattoo-6.jpg', likesCount: 189, commentsCount: 42,
-        user: { id: 'sofia-toro', username: 'Sofía Toro', avatar: '' },
+        user: { id: 'camilasanchez', username: 'Camila Sánchez', avatar: '' },
         category: { name: 'Lettering' }, location: 'Medellín, Colombia',
         createdAt: '2025-11-25T10:00:00Z', likedByCurrentUser: false,
     },
@@ -271,6 +271,6 @@ export const MOCK_FEED_POSTS = [
 export function getMockPostsForStudio(studioId: string): any[] {
     if (MOCK_STUDIO_POSTS[studioId]) return MOCK_STUDIO_POSTS[studioId];
     return [
-        { id: `mock-${studioId}-1`, title: 'Trabajo destacado', content: 'Trabajo realizado en nuestro estudio.', imageUrl: '', likesCount: 0, commentsCount: 0, createdAt: new Date().toISOString() },
+        { id: `mock-${studioId}-1`, title: 'Trabajo destacado', content: 'Trabajo realizado en nuestro estudio.', imageUrl: '/images/tattoos/tattoo-5.jpg', likesCount: 0, commentsCount: 0, createdAt: new Date().toISOString() },
     ];
 }
