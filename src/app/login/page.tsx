@@ -19,10 +19,11 @@ export default function Login() {
             if (data?.access_token) {
                 localStorage.setItem('token', data.access_token);
 
-               window.location.href = '/feed';
+                window.location.href = '/feed';
             }
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Credenciales inválidas. Inténtalo de nuevo.';
+            const errorMessage =
+                error.response?.data?.message || 'Credenciales inválidas. Inténtalo de nuevo.';
             alert(errorMessage);
         }
     };
@@ -31,6 +32,7 @@ export default function Login() {
         {
             label: 'Correo electrónico',
             type: 'email',
+            name: 'email',
             placeholder: 'usuario@gmail.com',
             value: email,
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
@@ -39,6 +41,7 @@ export default function Login() {
         {
             label: 'Contraseña',
             type: 'password',
+            name: 'password',
             placeholder: '••••••••',
             value: password,
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value),
@@ -57,8 +60,8 @@ export default function Login() {
                     </h1>
 
                     <p className="text-[15px] font-medium leading-relaxed text-black/80">
-                        La red social para amantes del tatuaje. Encuentra inspiración, comparte tu talento y conecta con
-                        estudios y clientes.
+                        La red social para amantes del tatuaje. Encuentra inspiración, comparte tu
+                        talento y conecta con estudios y clientes.
                     </p>
                 </div>
             </section>
@@ -68,6 +71,7 @@ export default function Login() {
                     ¿No tienes cuenta?
                     <Link
                         href="/register"
+                        data-cy="link-to-register"
                         className="border-b-2 border-black pb-0.5 ml-2 hover:text-gray-600 transition-colors"
                     >
                         Regístrate
@@ -79,6 +83,7 @@ export default function Login() {
                     subtitle="Bienvenido de nuevo a la comunidad."
                     fields={loginFields}
                     buttonText="Entrar en la red"
+                    buttonDataCy="btn-login" // <-- CAMBIO AQUÍ: ID único para el botón de envío
                     onSubmit={handleLogin}
                     footer={
                         <div className="text-center">

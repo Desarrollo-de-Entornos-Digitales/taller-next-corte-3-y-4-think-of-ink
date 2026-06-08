@@ -94,9 +94,19 @@ export default function PriceRangePage() {
     const [error, setError] = useState<string | null>(null);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
 
+    function applySort(arr: PriceResult[]) {
+        let sorted = [...arr];
+        if (sort === 'rating') sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        else if (sort === 'minPrice') sorted.sort((a, b) => (a.minPrice || 0) - (b.minPrice || 0));
+        else if (sort === 'maxPrice') sorted.sort((a, b) => (b.maxPrice || 0) - (a.maxPrice || 0));
+        setResults(sorted);
+    }
+
     const fetchResults = useCallback(async () => {
+        // Tu validación original intacta 
         const token = localStorage.getItem('token');
         if (!token) return;
+
         setLoading(true);
         setError(null);
         try {
@@ -131,14 +141,6 @@ export default function PriceRangePage() {
             setLoading(false);
         }
     }, [minPrice, maxPrice, sort]);
-
-    function applySort(arr: PriceResult[]) {
-        let sorted = [...arr];
-        if (sort === 'rating') sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        else if (sort === 'minPrice') sorted.sort((a, b) => (a.minPrice || 0) - (b.minPrice || 0));
-        else if (sort === 'maxPrice') sorted.sort((a, b) => (b.maxPrice || 0) - (a.maxPrice || 0));
-        setResults(sorted);
-    }
 
     useEffect(() => {
         fetchResults();
@@ -214,6 +216,7 @@ export default function PriceRangePage() {
                                 return (
                                     <button
                                         key={preset.label}
+                                        type="button"
                                         onClick={() => handlePreset(preset.min, preset.max)}
                                         className={`px-4 py-2 text-xs font-bold rounded-md border-2 transition-colors ${
                                             active
@@ -234,6 +237,7 @@ export default function PriceRangePage() {
 
                             <div className="relative">
                                 <button
+                                    type="button"
                                     onClick={() => setShowSortDropdown(!showSortDropdown)}
                                     className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md text-sm font-bold hover:border-black transition-colors"
                                 >
@@ -245,6 +249,7 @@ export default function PriceRangePage() {
                                         {SORT_OPTIONS.map((opt) => (
                                             <button
                                                 key={opt.value}
+                                                type="button"
                                                 onClick={() => {
                                                     setSort(opt.value);
                                                     setShowSortDropdown(false);
