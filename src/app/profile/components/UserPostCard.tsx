@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { MoreVertical } from 'lucide-react';
 import { UserPost } from '@/lib/types';
 import { PostStats } from './PostStats';
@@ -8,27 +9,32 @@ import { formatDate, resolveImageUrl } from '@/lib/utils';
 interface UserPostCardProps {
     post: UserPost;
     onDeleteClick: (postId: string) => void;
+    onViewComments?: (postId: string) => void;
     isDeleting?: boolean;
 }
 
-export const UserPostCard = ({ post, onDeleteClick, isDeleting = false }: UserPostCardProps) => {
+export const UserPostCard = ({ post, onDeleteClick, onViewComments, isDeleting = false }: UserPostCardProps) => {
     return (
         <div className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:border-gray-300 transition-colors group">
             {/* Header */}
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#E5D9F2] flex items-center justify-center text-sm font-bold text-[#6000FF]">
-                        {post.user.username.charAt(0).toUpperCase()}
+                <Link href={`/profile/${post.user.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-[#E5D9F2] flex items-center justify-center text-sm font-bold text-[#6000FF] overflow-hidden flex-shrink-0">
+                        {post.user.avatar ? (
+                            <img src={post.user.avatar} alt={post.user.username} className="w-full h-full object-cover" />
+                        ) : (
+                            post.user.username.charAt(0).toUpperCase()
+                        )}
                     </div>
-                    <div>
-                        <p className="text-sm font-bold text-black">{post.user.username}</p>
+                    <div className="min-w-0">
+                        <p className="text-sm font-bold text-black hover:underline truncate">{post.user.username}</p>
                         <p className="text-xs text-gray-400 font-medium">
                             {formatDate(post.createdAt)}
                         </p>
                     </div>
-                </div>
+                </Link>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                         onClick={() => onDeleteClick(post.id)}
                         disabled={isDeleting}
@@ -67,7 +73,7 @@ export const UserPostCard = ({ post, onDeleteClick, isDeleting = false }: UserPo
 
             {/* Footer */}
             <div className="p-4 border-t border-gray-100">
-                <PostStats stats={post.stats} />
+                <PostStats stats={post.stats} onViewComments={onViewComments ? () => onViewComments(post.id) : undefined} />
             </div>
         </div>
     );

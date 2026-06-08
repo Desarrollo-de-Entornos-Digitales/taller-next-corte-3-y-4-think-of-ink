@@ -5,9 +5,10 @@ import { PostStats as PostStatsType } from '@/lib/types';
 
 interface PostStatsProps {
     stats: PostStatsType;
+    onViewComments?: () => void;
 }
 
-export const PostStats = ({ stats }: PostStatsProps) => {
+export const PostStats = ({ stats, onViewComments }: PostStatsProps) => {
     return (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -21,9 +22,14 @@ export const PostStats = ({ stats }: PostStatsProps) => {
                 </div>
             </div>
 
-            <button className="text-sm font-black tracking-[0.15em] uppercase border-b-2 border-transparent hover:border-black transition-all">
-                Ver comentarios
-            </button>
+            {onViewComments && (
+                <button
+                    onClick={onViewComments}
+                    className="text-sm font-black tracking-[0.15em] uppercase border-b-2 border-transparent hover:border-black transition-all"
+                >
+                    Ver comentarios
+                </button>
+            )}
         </div>
     );
 };

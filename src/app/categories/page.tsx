@@ -9,7 +9,7 @@ import { CategorySection } from './components/CategorySection';
 import { TattooCard } from './components/TattooCard';
 import { ArtistCard } from './components/ArtistCard';
 import { StudioCard } from './components/StudioCard';
-import { getAllPosts, normalizePostsResponse } from '@/lib/api/posts';
+import { getAllPosts, normalizePostsResponse, likePost } from '@/lib/api/posts';
 import { resolveImageUrl } from '@/lib/utils';
 
 const CATEGORIES = [
@@ -25,11 +25,25 @@ const ARTISTS = [
     { name: 'Neo Ink Art', city: 'Barranquilla, Colombia', specialty: 'Neo Tradicional', rating: 4.9, avatar: 'N', studioId: 'neo-art-studio' },
 ];
 
+const LOGO_MAP: Record<string, string> = {
+    'Estudio 79 Tattoo': '',
+    'La Vida Tattoo': '',
+    'Tinta Finita': '',
+    'Seven Ink Studio': '',
+    'Ink Starter Studio': '/images/logos/ink-starter-studio.png',
+    'Mini Tattoo Cali': '/images/logos/mini-tattoo-cali.png',
+    'Fine Line Studio': '/images/logos/fine-line-studio.png',
+    'Neo Art Tattoo': '/images/logos/neo-art-studio.png',
+    'Black House Tattoo': '/images/logos/black-house-tattoo.png',
+    'Real Ink Tattoo': '/images/logos/real-ink-tattoo.png',
+    'Black Ink Studio': '/images/logos/black-house-tattoo.png',
+};
+
 const STUDIOS = [
-    { name: 'Estudio 79 Tattoo', city: 'Bogotá', rating: 4.9, studioId: 'estudio-79-tattoo' },
-    { name: 'La Vida Tattoo', city: 'Medellín', rating: 4.8, studioId: 'la-vida-tattoo' },
-    { name: 'Tinta Finita', city: 'Cali', rating: 4.7, studioId: 'tinta-finita' },
-    { name: 'Seven Ink Studio', city: 'Cartagena', rating: 4.9, studioId: 'seven-ink-studio' },
+    { name: 'Ink Starter Studio', city: 'Cali, Colombia', rating: 4.9, studioId: 'ink-starter-studio' },
+    { name: 'Mini Tattoo Cali', city: 'San Fernando, Cali', rating: 4.8, studioId: 'mini-tattoo-cali' },
+    { name: 'Fine Line Studio', city: 'Granada, Cali', rating: 4.7, studioId: 'fine-line-studio' },
+    { name: 'Black House Tattoo', city: 'Granada, Cali', rating: 4.9, studioId: 'black-house-tattoo' },
 ];
 
 const VIRAL_POSTS = [
@@ -49,6 +63,7 @@ export default function CategoriesPage() {
     const [search, setSearch] = useState('');
     const [allPosts, setAllPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -71,15 +86,30 @@ export default function CategoriesPage() {
         fetchPosts();
     }, []);
 
-    const filteredPosts = allPosts.filter((post) => {
-        if (activeCategory === 'Todas') return true;
-        const categoryName = post.category?.name || '';
-        return categoryName.toLowerCase() === activeCategory.toLowerCase();
-    });
-
-    const recentPosts = [...filteredPosts]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 4);
+    const handleLike = async (postId: string) => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        try {
+            const result = await likePost(postId, token);
+            const newLikesCount = result?.likesCount ?? result?.likes ?? result?._count?.likes ?? result?.count;
+            const nowLiked = result?.likedByCurrentUser ?? result?.isLiked ?? result?.liked ?? false;
+            setLikedPosts((prev) => {
+                const next = new Set(prev);
+                if (nowLiked) next.add(postId);
+                else next.delete(postId);
+                return next;
+            });
+            if (newLikesCount !== undefined) {
+                setAllPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === postId ? { ...p, likesCount: newLikesCount, _count: { ...p._count, likes: newLikesCount } } : p
+                    )
+                );
+            }
+        } catch (err) {
+            console.error('Error toggling like:', err);
+        }
+    };
 
     const getLikeCount = (p: any): number => {
         const v = p._count?.likes ?? p.likes ?? p.likesCount ?? 0;
@@ -89,6 +119,16 @@ export default function CategoriesPage() {
         const v = p._count?.comments ?? p.comments ?? p.commentsCount ?? 0;
         return typeof v === 'number' ? v : (Array.isArray(v) ? v.length : 0);
     };
+
+    const filteredPosts = allPosts.filter((post) => {
+        if (activeCategory === 'Todas') return true;
+        const categoryName = post.category?.name || '';
+        return categoryName.toLowerCase() === activeCategory.toLowerCase();
+    });
+
+    const recentPosts = [...filteredPosts]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 4);
 
     const getInitial = (name: string) => (name ? name.charAt(0).toUpperCase() : '?');
 
@@ -140,6 +180,7 @@ export default function CategoriesPage() {
                                                 {recentPosts.map((post) => (
                                                     <TattooCard
                                                         key={post.id}
+                                                        postId={post.id}
                                                         image={post.imageUrl}
                                                         author={post.user?.username || 'Usuario'}
                                                         authorAvatar={getInitial(post.user?.username)}
@@ -147,6 +188,8 @@ export default function CategoriesPage() {
                                                         likes={getLikeCount(post)}
                                                         comments={getCommentCount(post)}
                                                         userId={post.user?.id}
+                                                        liked={likedPosts.has(post.id)}
+                                                        onLike={handleLike}
                                                     />
                                                 ))}
                                             </div>
@@ -160,6 +203,7 @@ export default function CategoriesPage() {
                                             {VIRAL_POSTS.map((post) => (
                                                 <TattooCard
                                                     key={post.id}
+                                                    postId={post.id}
                                                     image={post.image}
                                                     author={post.author}
                                                     authorAvatar={post.authorAvatar}
@@ -168,6 +212,8 @@ export default function CategoriesPage() {
                                                     comments={post.comments}
                                                     userId={post.userId || undefined}
                                                     studioId={post.studioId || undefined}
+                                                    liked={likedPosts.has(post.id)}
+                                                    onLike={handleLike}
                                                 />
                                             ))}
                                         </div>
@@ -180,6 +226,7 @@ export default function CategoriesPage() {
                                             {TOP_LIKED.map((post) => (
                                                 <TattooCard
                                                     key={post.id}
+                                                    postId={post.id}
                                                     image={post.image}
                                                     author={post.author}
                                                     authorAvatar={post.authorAvatar}
@@ -188,6 +235,8 @@ export default function CategoriesPage() {
                                                     comments={post.comments}
                                                     userId={post.userId || undefined}
                                                     studioId={post.studioId || undefined}
+                                                    liked={likedPosts.has(post.id)}
+                                                    onLike={handleLike}
                                                 />
                                             ))}
                                         </div>
@@ -231,6 +280,7 @@ export default function CategoriesPage() {
                                             name={studio.name}
                                             city={studio.city}
                                             rating={studio.rating}
+                                            image={LOGO_MAP[studio.name] || undefined}
                                             studioId={studio.studioId || undefined}
                                         />
                                     ))}

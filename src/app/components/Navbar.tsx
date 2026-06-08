@@ -2,30 +2,22 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { NotificationBell } from './NotificationBell';
+import { useUser } from '@/app/context/UserContext';
 
 export const Navbar = () => {
     const router = useRouter();
     const [showDropdown, setShowDropdown] = useState(false);
-    const [username, setUsername] = useState('Usuario');
-    const [avatar, setAvatar] = useState('');
+    const { user } = useUser();
 
-    useEffect(() => {
-        const stored = localStorage.getItem('username');
-        if (stored) setUsername(stored);
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-            try {
-                const u = JSON.parse(userStr);
-                if (u.username) setUsername(u.username);
-                if (u.avatar) setAvatar(u.avatar);
-            } catch {}
-        }
-    }, []);
+    const username = user?.username || 'Usuario';
+    const avatar = user?.avatar || '';
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('username');
         router.push('/login');
     };
 

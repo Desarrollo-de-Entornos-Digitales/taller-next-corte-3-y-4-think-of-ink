@@ -79,21 +79,7 @@ const formatPrice = (v: any): string => {
     return `$${num.toLocaleString('es-CO')}`;
 };
 
-const DefaultStudioLogo = () => (
-    <svg viewBox="0 0 200 150" className="w-full h-full p-8" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="30" y="50" width="140" height="90" rx="6" />
-        <rect x="55" y="70" width="90" height="50" rx="4" />
-        <rect x="55" y="20" width="90" height="30" rx="6" />
-        <line x1="100" y1="20" x2="100" y2="10" />
-        <line x1="80" y1="10" x2="120" y2="10" />
-        <rect x="80" y="80" width="40" height="40" rx="2" />
-        <circle cx="100" cy="100" r="8" />
-        <line x1="100" y1="95" x2="100" y2="100" />
-        <line x1="97" y1="100" x2="103" y2="100" />
-        <rect x="65" y="25" width="15" height="10" rx="2" />
-        <rect x="120" y="25" width="15" height="10" rx="2" />
-    </svg>
-);
+const getInitials = (name: string) => name.charAt(0).toUpperCase();
 
 function filterMock(min: number, max: number): PriceResult[] {
     return MOCK_RESULTS.filter((r) => r.minPrice >= min && r.maxPrice <= max);
@@ -303,7 +289,7 @@ export default function PriceRangePage() {
                                         href={getItemLink(item)}
                                         className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:border-black transition-colors group block"
                                     >
-                                        <div className="aspect-[4/3] bg-gray-50 overflow-hidden">
+                                        <div className="aspect-[4/3] bg-gray-50 overflow-hidden flex items-center justify-center">
                                             {item.logoUrl ? (
                                                 <img
                                                     src={resolveImageUrl(item.logoUrl)}
@@ -311,7 +297,9 @@ export default function PriceRangePage() {
                                                     className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                                                 />
                                             ) : (
-                                                <DefaultStudioLogo />
+                                                <span className="text-5xl font-black text-gray-300 select-none">
+                                                    {getInitials(item.name)}
+                                                </span>
                                             )}
                                         </div>
 
