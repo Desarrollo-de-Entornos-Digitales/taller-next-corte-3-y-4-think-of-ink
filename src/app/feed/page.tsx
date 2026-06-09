@@ -11,6 +11,7 @@ import { InfoCard } from './ui/InfoCard';
 import { getAllPosts, createPost, normalizePostsResponse, likePost, getComments, createComment, deleteComment, deletePost } from '@/lib/api/posts';
 import { formatDate, resolveImageUrl } from '@/lib/utils';
 import { MOCK_FEED_POSTS } from '@/lib/mock-profiles';
+import { CATEGORIES } from '@/lib/categories';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 10 * 1024 * 1024;
@@ -645,11 +646,9 @@ export default function Feed() {
                                             className="w-full px-4 py-2 border-2 border-gray-200 rounded-md focus:border-black focus:outline-none font-medium text-sm bg-white cursor-pointer"
                                         >
                                             <option value="">Selecciona una categoría</option>
-                                            <option value="Tatuaje">Tatuaje</option>
-                                            <option value="Diseño">Diseño</option>
-                                            <option value="Estudio">Estudio</option>
-                                            <option value="Artista">Artista</option>
-                                            <option value="Promoción">Promoción</option>
+                                            {CATEGORIES.map((cat) => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
                                         </select>
                                     </div>
 

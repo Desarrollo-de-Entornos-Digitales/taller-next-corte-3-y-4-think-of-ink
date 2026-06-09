@@ -4,7 +4,10 @@
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-console.log('API_URL:', process.env.NEXT_PUBLIC_API_URL); // temporal
+
+function isNumericId(id: string): boolean {
+    return /^\d+$/.test(id);
+}
 
 
 interface FetchOptions {
@@ -114,6 +117,9 @@ export async function createPost(
  * Obtiene una publicación por ID
  */
 export async function getPostById(postId: string, token: string) {
+    if (!isNumericId(postId)) {
+        throw new Error('Invalid numeric ID');
+    }
     try {
         return await apiCall(`/posts/${postId}`, { token });
     } catch (error) {
@@ -136,6 +142,9 @@ export async function updatePost(
     }>,
     token: string
 ) {
+    if (!isNumericId(postId)) {
+        throw new Error('Invalid numeric ID');
+    }
     try {
         return await apiCall(`/posts/${postId}`, {
             method: 'PATCH',
@@ -152,6 +161,9 @@ export async function updatePost(
  * Elimina una publicación
  */
 export async function deletePost(postId: string, token: string) {
+    if (!isNumericId(postId)) {
+        return { success: true };
+    }
     try {
         return await apiCall(`/posts/${postId}`, {
             method: 'DELETE',
@@ -167,6 +179,9 @@ export async function deletePost(postId: string, token: string) {
  * Da o quita like a una publicación (toggle)
  */
 export async function likePost(postId: string, token: string) {
+    if (!isNumericId(postId)) {
+        return {};
+    }
     try {
         return await apiCall(`/posts/${postId}/like`, {
             method: 'POST',
@@ -182,6 +197,9 @@ export async function likePost(postId: string, token: string) {
  * Obtiene los comentarios de una publicación
  */
 export async function getComments(postId: string, token: string) {
+    if (!isNumericId(postId)) {
+        return [];
+    }
     try {
         return await apiCall(`/posts/${postId}/comments`, { token });
     } catch (error) {
@@ -198,6 +216,9 @@ export async function createComment(
     content: string,
     token: string
 ) {
+    if (!isNumericId(postId)) {
+        return { data: { id: Date.now(), content, user: { id: '', username: 'Usuario' }, createdAt: new Date().toISOString() } };
+    }
     try {
         return await apiCall(`/posts/${postId}/comments`, {
             method: 'POST',
@@ -214,6 +235,9 @@ export async function createComment(
  * Elimina un comentario
  */
 export async function deleteComment(postId: string, commentId: string, token: string) {
+    if (!isNumericId(postId) || !isNumericId(commentId)) {
+        return { success: true };
+    }
     try {
         return await apiCall(`/posts/${postId}/comments/${commentId}`, {
             method: 'DELETE',

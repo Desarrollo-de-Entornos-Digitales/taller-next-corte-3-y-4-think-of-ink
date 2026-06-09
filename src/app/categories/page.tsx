@@ -11,12 +11,7 @@ import { ArtistCard } from './components/ArtistCard';
 import { StudioCard } from './components/StudioCard';
 import { getAllPosts, normalizePostsResponse, likePost } from '@/lib/api/posts';
 import { resolveImageUrl } from '@/lib/utils';
-
-const CATEGORIES = [
-    'Todas', 'Blackwork', 'Realismo', 'Fine Line', 'Tradicional',
-    'Neo Tradicional', 'Minimalista', 'Geométrico', 'Anime',
-    'Lettering', 'Color', 'Tribal', 'Piercing', 'Estudios',
-];
+import { CATEGORIES } from '@/lib/categories';
 
 const ARTISTS = [
     { name: 'Black Ink Studio', city: 'Bogotá, Colombia', specialty: 'Blackwork y Realismo', rating: 4.9, avatar: 'B', studioId: 'black-ink-studio' },
@@ -213,11 +208,11 @@ export default function CategoriesPage() {
                         </div>
 
                         <div className="mb-10">
-                            <CategoryFilter
-                                categories={CATEGORIES}
-                                active={activeCategory}
-                                onSelect={setActiveCategory}
-                            />
+                    <CategoryFilter
+                        categories={['Todas', ...CATEGORIES]}
+                        active={activeCategory}
+                        onSelect={setActiveCategory}
+                    />
                         </div>
 
                         {loading ? (

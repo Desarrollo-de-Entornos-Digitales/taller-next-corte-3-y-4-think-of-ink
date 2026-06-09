@@ -7,6 +7,7 @@ import { Navbar } from '../components/Navbar';
 import { CustomButton } from '../components/buttons';
 import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark, X, AlertCircle } from 'lucide-react';
 import { createPost } from '@/lib/api/posts';
+import { CATEGORIES } from '@/lib/categories';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
@@ -258,11 +259,9 @@ export default function NewPost() {
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-md focus:border-black focus:outline-none font-medium text-sm bg-white"
                                     >
                                         <option value="">Selecciona una categoría</option>
-                                        <option value="Tatuaje">Tatuaje</option>
-                                        <option value="Diseño">Diseño</option>
-                                        <option value="Estudio">Estudio</option>
-                                        <option value="Artista">Artista</option>
-                                        <option value="Promoción">Promoción</option>
+                                        {CATEGORIES.map((cat) => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
                                     </select>
                                 </div>
 

@@ -1,5 +1,9 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+function isNumericId(id: string): boolean {
+    return /^\d+$/.test(id);
+}
+
 interface FetchOptions {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     body?: any;
@@ -82,6 +86,9 @@ export async function updateUserProfile(
 }
 
 export async function getPublicProfile(userId: string, token?: string) {
+    if (!isNumericId(userId)) {
+        throw new Error('Invalid numeric ID');
+    }
     try {
         return await apiCall(`/users/${userId}`, token ? { token } : {});
     } catch (error) {
@@ -90,7 +97,37 @@ export async function getPublicProfile(userId: string, token?: string) {
     }
 }
 
+export async function uploadAvatar(file: File, token: string) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    let response: Response;
+    try {
+        response = await fetch(`${API_URL}/users/avatar`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+        });
+    } catch {
+        throw new Error('Error de conexión al subir avatar.');
+    }
+
+    if (!response.ok) {
+        let errorMessage = `Error ${response.status}`;
+        try {
+            const errorBody = await response.json();
+            errorMessage = errorBody.message || errorBody.error || errorMessage;
+        } catch {}
+        throw new Error(errorMessage);
+    }
+
+    return response.json();
+}
+
 export async function getPostsByUser(userId: string, token?: string) {
+    if (!isNumericId(userId)) {
+        return [];
+    }
     try {
         return await apiCall(`/posts/user/${userId}`, token ? { token } : {});
     } catch (error) {

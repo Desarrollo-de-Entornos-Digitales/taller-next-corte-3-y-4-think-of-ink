@@ -9,7 +9,7 @@ import { SettingsSection } from '../components/SettingsSection';
 import { SettingsFormField } from '../components/SettingsFormField';
 import { SocialMediaField } from '../components/SocialMediaField';
 import { AccountOption } from '../components/AccountOption';
-import { getUserProfile, updateUserProfile } from '@/lib/api/users';
+import { getUserProfile, updateUserProfile, uploadAvatar } from '@/lib/api/users';
 import { useUser } from '@/app/context/UserContext';
 import { resolveImageUrl } from '@/lib/utils';
 
@@ -116,31 +116,38 @@ export default function SettingsPage() {
             // Clean undefined fields
             Object.keys(payload).forEach((k) => { if (payload[k] === undefined) delete payload[k]; });
 
-            // Try to include avatar; backend may reject it — we handle gracefully
-            const finalAvatar = avatarPreview || formData.avatar || undefined;
-            if (finalAvatar) payload.avatar = finalAvatar;
+            // Upload avatar first if a new file was selected
+            let avatarUrlFromUpload = '';
+            if (avatarFile) {
+                try {
+                    const uploadResult = await uploadAvatar(avatarFile, token);
+                    avatarUrlFromUpload = uploadResult.url || uploadResult.avatarUrl || uploadResult.avatar || '';
+                } catch (err) {
+                    console.error('Error uploading avatar:', err);
+                    alert('Error al subir la imagen de perfil. Intenta nuevamente.');
+                    setIsSaving(false);
+                    return;
+                }
+            }
+
+            // Include avatar URL in profile update if we got one
+            if (avatarUrlFromUpload) {
+                payload.avatar = avatarUrlFromUpload;
+            } else {
+                const existingAvatar = formData.avatar || undefined;
+                if (existingAvatar) payload.avatar = existingAvatar;
+            }
 
             let updated: any = {};
             try {
                 const result = await updateUserProfile(payload, token);
                 updated = result?.user || result?.data || result;
             } catch (err) {
-                // If avatar caused 500, retry without it
-                if (finalAvatar && payload.avatar) {
-                    delete payload.avatar;
-                    try {
-                        const result = await updateUserProfile(payload, token);
-                        updated = result?.user || result?.data || result;
-                    } catch {
-                        throw err;
-                    }
-                } else {
-                    throw err;
-                }
+                throw err;
             }
 
             const apiAvatar = updated.avatar || updated.avatarUrl || '';
-            const avatarUrl = resolveImageUrl(apiAvatar || avatarPreview || formData.avatar || '');
+            const avatarUrl = resolveImageUrl(avatarUrlFromUpload || apiAvatar || formData.avatar || '');
 
             const merged: UserProfile = {
                 ...(userProfile as UserProfile),
