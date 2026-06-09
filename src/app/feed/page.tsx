@@ -10,7 +10,7 @@ import { Sidebar } from '../components/Sidebar';
 import { InfoCard } from './ui/InfoCard';
 import { getAllPosts, createPost, normalizePostsResponse, likePost, getComments, createComment, deleteComment, deletePost } from '@/lib/api/posts';
 import { formatDate, resolveImageUrl } from '@/lib/utils';
-import { MOCK_FEED_POSTS, MOCK_USERS, MOCK_STUDIOS, getMockPostsForUser, getMockPostsForStudio } from '@/lib/mock-profiles';
+import { MOCK_USERS, MOCK_STUDIOS, getMockPostsForUser, getMockPostsForStudio } from '@/lib/mock-profiles';
 import { CATEGORIES } from '@/lib/categories';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -59,7 +59,7 @@ export default function Feed() {
                 return;
             }
             const response = await getAllPosts(token);
-            let postsArray = normalizePostsResponse(response).map(p => {
+            const postsArray = normalizePostsResponse(response).map(p => {
                 const resolved = resolveImageUrl(p.imageUrl);
                 const rawCategory = p.category;
                 const normalizedCategory = typeof rawCategory === 'string'
@@ -69,16 +69,6 @@ export default function Feed() {
                         : undefined;
                 return { ...p, imageUrl: resolved, category: normalizedCategory };
             });
-            const camilaPost = MOCK_FEED_POSTS.find(p => p.user?.id === 'camilasanchez');
-            const luisPost = MOCK_FEED_POSTS.find(p => p.user?.id === 'luis-rojas');
-            const extraPosts = [camilaPost, luisPost].filter(Boolean);
-            const existingIds = new Set(postsArray.map(p => p.id));
-            for (const ep of extraPosts) {
-                if (ep && !existingIds.has(ep.id)) {
-                    postsArray.push(ep);
-                }
-            }
-            postsArray = postsArray.slice(0, 3);
             setAllPosts(postsArray);
             const liked = new Set<string>();
             for (const p of postsArray) {
@@ -87,7 +77,7 @@ export default function Feed() {
             setLikedPosts(liked);
         } catch (err) {
             console.error('Error obteniendo posts:', err);
-            setAllPosts(MOCK_FEED_POSTS.slice(0, 3));
+            setAllPosts([]);
             setError(null);
         } finally {
             setLoading(false);

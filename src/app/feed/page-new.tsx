@@ -8,7 +8,7 @@ import { InfoCard } from './ui/InfoCard';
 import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark, Send, ChevronLeft, Trash2, AlertCircle } from 'lucide-react';
 import { getAllPosts, createPost, normalizePostsResponse, likePost, getComments, createComment, deleteComment } from '@/lib/api/posts';
 import { formatDate, resolveImageUrl, PLACEHOLDER_IMAGE } from '@/lib/utils';
-import { MOCK_FEED_POSTS, MOCK_USERS, MOCK_STUDIOS, getMockPostsForUser, getMockPostsForStudio } from '@/lib/mock-profiles';
+import { MOCK_USERS, MOCK_STUDIOS, getMockPostsForUser, getMockPostsForStudio } from '@/lib/mock-profiles';
 import { CATEGORIES } from '@/lib/categories';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -72,7 +72,7 @@ export default function Feed() {
             setLikedPosts(liked);
         } catch (err) {
             console.error('Error obteniendo posts:', err);
-            setAllPosts(MOCK_FEED_POSTS);
+            setAllPosts([]);
             setError(null);
         } finally {
             setLoading(false);
