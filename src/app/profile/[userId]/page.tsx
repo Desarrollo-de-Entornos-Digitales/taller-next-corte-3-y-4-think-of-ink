@@ -50,6 +50,9 @@ export default function PublicProfilePage() {
                     getPostsByUser(userId, token),
                 ]);
                 const p = profileRes.user || profileRes.data || profileRes;
+                if (p.avatar || p.avatarUrl) {
+                    p.avatar = resolveImageUrl(p.avatar || p.avatarUrl);
+                }
                 setProfile(p);
                 const postsArray = Array.isArray(postsRes) ? postsRes
                     : postsRes.data && Array.isArray(postsRes.data) ? postsRes.data

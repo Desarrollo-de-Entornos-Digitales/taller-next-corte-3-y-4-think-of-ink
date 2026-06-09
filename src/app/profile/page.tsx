@@ -68,7 +68,13 @@ export default function ProfilePage() {
                 setBio(p.bio || '');
                 setLocation(p.location || '');
                 setProfession(p.profession || '');
-                setAvatar(p.avatar || '');
+                const apiAvatar = resolveImageUrl(p.avatar || p.avatarUrl || '');
+                const storedUser = localStorage.getItem('user');
+                let storedAvatar = '';
+                if (storedUser) {
+                    try { const parsed = JSON.parse(storedUser); if (parsed.avatar) storedAvatar = parsed.avatar; } catch {}
+                }
+                setAvatar(apiAvatar || storedAvatar);
                 setWebsite(p.website || '');
                 setInstagram(p.instagram || '');
                 setBehance(p.behance || '');
@@ -76,6 +82,13 @@ export default function ProfilePage() {
             } catch {
                 const u = localStorage.getItem('username') || 'Usuario';
                 setUsername(u); setFullName(u);
+                const stored = localStorage.getItem('user');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed.avatar) setAvatar(parsed.avatar);
+                    } catch {}
+                }
             }
 
             try {

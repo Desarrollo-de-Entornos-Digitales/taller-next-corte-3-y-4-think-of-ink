@@ -58,11 +58,21 @@ export default function Feed() {
                 return;
             }
             const response = await getAllPosts(token);
-            const postsArray = normalizePostsResponse(response).map(p => {
+            let postsArray = normalizePostsResponse(response).map(p => {
                 const resolved = resolveImageUrl(p.imageUrl);
                 if (p.imageUrl) console.log('[Feed] imageUrl:', p.imageUrl, '→', resolved);
                 return { ...p, imageUrl: resolved };
             });
+            const camilaPost = MOCK_FEED_POSTS.find(p => p.user?.id === 'camilasanchez');
+            const luisPost = MOCK_FEED_POSTS.find(p => p.user?.id === 'luis-rojas');
+            const extraPosts = [camilaPost, luisPost].filter(Boolean);
+            const existingIds = new Set(postsArray.map(p => p.id));
+            for (const ep of extraPosts) {
+                if (ep && !existingIds.has(ep.id)) {
+                    postsArray.push(ep);
+                }
+            }
+            postsArray = postsArray.slice(0, 3);
             setAllPosts(postsArray);
             const liked = new Set<string>();
             for (const p of postsArray) {
@@ -71,7 +81,7 @@ export default function Feed() {
             setLikedPosts(liked);
         } catch (err) {
             console.error('Error obteniendo posts:', err);
-            setAllPosts(MOCK_FEED_POSTS);
+            setAllPosts(MOCK_FEED_POSTS.slice(0, 3));
             setError(null);
         } finally {
             setLoading(false);
@@ -113,7 +123,7 @@ export default function Feed() {
     }, [activeTab, allPosts]);
 
     const displayPosts = getSortedPosts();
-    const itemsPerPage = 2;
+    const itemsPerPage = 3;
     const totalPages = Math.ceil(displayPosts.length / itemsPerPage);
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -435,7 +445,7 @@ export default function Feed() {
                                         return (
                                             <div key={item.id} className="border border-gray-200 rounded-lg p-6 bg-white hover:border-black transition-colors group">
                                                 <div className="flex items-center gap-3 mb-4">
-                                                    <Link href={item.user?.id ? `/profile/${item.user.id}` : '#'} className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <Link href={item.user?.isStudio ? `/studio/${item.user.id}` : item.user?.id ? `/profile/${item.user.id}` : '#'} className="flex items-center gap-3 flex-1 min-w-0">
                                                         <div className="w-8 h-8 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[#6000FF] flex-shrink-0 overflow-hidden">
                                                             {item.user?.avatar ? (
                                                                 <img src={resolveImageUrl(item.user.avatar)} alt="" className="w-full h-full object-cover" />
@@ -839,7 +849,7 @@ export default function Feed() {
                                 </div>
                             )}
 
-                            <Link href={detailPost.user?.id ? `/profile/${detailPost.user.id}` : '#'} className="flex items-center gap-3 mb-4 group">
+                            <Link href={detailPost.user?.isStudio ? `/studio/${detailPost.user.id}` : detailPost.user?.id ? `/profile/${detailPost.user.id}` : '#'} className="flex items-center gap-3 mb-4 group">
                                 <div className="w-10 h-10 rounded-full bg-[#E5D9F2] flex items-center justify-center text-[#6000FF] font-bold flex-shrink-0 overflow-hidden">
                                     {detailPost.user?.avatar ? (
                                         <img src={detailPost.user.avatar} alt="" className="w-full h-full object-cover" />

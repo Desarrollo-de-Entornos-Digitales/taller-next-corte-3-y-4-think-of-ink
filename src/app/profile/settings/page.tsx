@@ -11,9 +11,10 @@ import { SocialMediaField } from '../components/SocialMediaField';
 import { AccountOption } from '../components/AccountOption';
 import { getUserProfile, updateUserProfile } from '@/lib/api/users';
 import { useUser } from '@/app/context/UserContext';
+import { resolveImageUrl } from '@/lib/utils';
 
 export default function SettingsPage() {
-    const { refreshUser } = useUser();
+    const { refreshUser, updateAvatar } = useUser();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -33,11 +34,17 @@ export default function SettingsPage() {
             try {
                 const data = await getUserProfile(token);
                 const p = data.user || data.data || data;
+                const apiAvatar = resolveImageUrl(p.avatar || p.avatarUrl || '');
+                const stored = localStorage.getItem('user');
+                let storedAvatar = '';
+                if (stored) {
+                    try { const parsed = JSON.parse(stored); if (parsed.avatar) storedAvatar = parsed.avatar; } catch {}
+                }
                 const profile: UserProfile = {
                     id: p.id || '', name: p.name || p.username || '',
                     username: p.username || 'Usuario', email: p.email || '',
                     profession: p.profession || '', bio: p.bio || '',
-                    location: p.location || '', avatar: p.avatar || '',
+                    location: p.location || '', avatar: apiAvatar || storedAvatar,
                     website: p.website || '', linkedin: p.linkedin || '',
                     behance: p.behance || '', instagram: p.instagram || '',
                     portfolio: p.portfolio || '',
@@ -132,6 +139,9 @@ export default function SettingsPage() {
                 }
             }
 
+            const apiAvatar = updated.avatar || updated.avatarUrl || '';
+            const avatarUrl = resolveImageUrl(apiAvatar || avatarPreview || formData.avatar || '');
+
             const merged: UserProfile = {
                 ...(userProfile as UserProfile),
                 name: updated.name || formData.fullName,
@@ -145,11 +155,11 @@ export default function SettingsPage() {
                 behance: updated.behance || formData.behance,
                 instagram: updated.instagram || formData.instagram,
                 portfolio: updated.portfolio || formData.portfolio,
-                avatar: avatarPreview || updated.avatar || formData.avatar || '',
+                avatar: avatarUrl,
             };
 
             setUserProfile(merged);
-            setAvatarPreview(undefined);
+            setAvatarPreview(avatarUrl);
             setAvatarFile(null);
 
             localStorage.setItem('user', JSON.stringify(merged));
@@ -157,6 +167,7 @@ export default function SettingsPage() {
             if (merged.location) localStorage.setItem('location', merged.location);
             if (merged.profession) localStorage.setItem('profession', merged.profession);
 
+            updateAvatar(avatarUrl);
             refreshUser();
 
             alert('Cambios guardados con éxito');

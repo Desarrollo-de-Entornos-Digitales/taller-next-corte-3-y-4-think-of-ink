@@ -36,7 +36,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 profession: p.profession || '',
                 bio: p.bio || '',
                 location: p.location || '',
-                avatar: p.avatar || '',
+                avatar: resolveImageUrl(p.avatar || p.avatarUrl) || '',
                 website: p.website || '',
                 linkedin: p.linkedin || '',
                 behance: p.behance || '',

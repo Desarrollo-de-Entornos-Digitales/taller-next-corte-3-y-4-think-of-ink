@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Heart, MessageCircle, MapPin, X, Camera, Globe, Star } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, MapPin, X, Camera, Globe, Star, Briefcase, ExternalLink } from 'lucide-react';
 import { formatDate, resolveImageUrl } from '@/lib/utils';
 import { MOCK_STUDIOS, getMockPostsForStudio } from '@/lib/mock-profiles';
 
@@ -30,6 +30,12 @@ export default function StudioProfilePage() {
 
     const getCount = (v: any): number => typeof v === 'number' ? v : (Array.isArray(v) ? v.length : 0);
 
+    const studioSocialMeta = [
+        { key: 'instagram', icon: Camera, label: 'Instagram', color: 'hover:text-pink-600' },
+        { key: 'behance', icon: Briefcase, label: 'Behance', color: 'hover:text-blue-600' },
+        { key: 'website', icon: Globe, label: 'Sitio web', color: 'hover:text-gray-600' },
+    ];
+
     useEffect(() => {
         if (!studioId) return;
         const token = localStorage.getItem('token');
@@ -44,6 +50,7 @@ export default function StudioProfilePage() {
                 ]);
 
                 const s = studioRes.user || studioRes.data || studioRes;
+                if (!s || (!s.name && !s.id)) throw new Error('Invalid studio');
                 setStudio(s);
 
                 const postsArray = Array.isArray(postsRes) ? postsRes
@@ -128,8 +135,13 @@ export default function StudioProfilePage() {
                             </div>
                         </div>
 
+                        {studio.specialties && (
+                            <p className="text-sm text-gray-600 font-medium flex items-center gap-1 justify-center md:justify-start mt-2">
+                                <Briefcase size={14} /> {studio.specialties}
+                            </p>
+                        )}
                         {studio.description && (
-                            <p className="text-sm text-gray-600 leading-relaxed max-w-md whitespace-pre-line">{studio.description}</p>
+                            <p className="text-sm text-gray-600 leading-relaxed max-w-md whitespace-pre-line mt-2">{studio.description}</p>
                         )}
                         {studio.location && (
                             <p className="text-xs text-gray-400 font-medium flex items-center gap-1 justify-center md:justify-start mt-2">
@@ -141,16 +153,28 @@ export default function StudioProfilePage() {
                                 <Star size={13} className="text-yellow-500 fill-yellow-500" /> {studio.rating.toFixed(1)}
                             </p>
                         )}
-                        {studio.website && (
-                            <a
-                                href={studio.website.startsWith('http') ? studio.website : `https://${studio.website}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs font-bold text-gray-500 hover:text-black flex items-center gap-1.5 transition-colors mt-2 justify-center md:justify-start"
-                            >
-                                <Globe size={13} /> Sitio web
-                            </a>
-                        )}
+
+                        {(() => {
+                            const socialLinks = studioSocialMeta
+                                .map((s) => ({ ...s, url: studio[s.key] }))
+                                .filter((s) => s.url);
+                            if (socialLinks.length === 0) return null;
+                            return (
+                                <div className="flex flex-wrap gap-3 mt-4 justify-center md:justify-start">
+                                    {socialLinks.map((s) => (
+                                        <a
+                                            key={s.key}
+                                            href={s.url!.startsWith('http') ? s.url! : `https://${s.url}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`text-xs font-bold text-gray-500 ${s.color} flex items-center gap-1.5 transition-colors`}
+                                        >
+                                            <s.icon size={14} /> {s.label}
+                                        </a>
+                                    ))}
+                                </div>
+                            );
+                        })()}
                     </div>
                 </div>
 
