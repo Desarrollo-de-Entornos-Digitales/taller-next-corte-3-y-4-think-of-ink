@@ -234,6 +234,7 @@ export const MOCK_USER_POSTS: Record<string, any[]> = {
         { id: 'mock-lr-1', title: 'Ave Fénix', content: 'Trabajo de realismo a color en antebrazo. Ave Fénix con detalles en plumaje.', imageUrl: '/images/tattoos/tattoo-7.jpg', likesCount: 312, commentsCount: 78, createdAt: '2025-12-15T10:00:00Z' },
         { id: 'mock-lr-2', title: 'Leopardo realista', content: 'Realismo en blanco y negro de leopardo.', imageUrl: '/images/tattoos/tattoo-11.jpg', likesCount: 145, commentsCount: 23, createdAt: '2025-11-20T10:00:00Z' },
         { id: 'mock-lr-3', title: 'Rostro hiperrealista', content: 'Retrato hiperrealista en escala de grises.', imageUrl: '/images/tattoos/tattoo-4.jpg', likesCount: 89, commentsCount: 12, createdAt: '2025-10-10T10:00:00Z' },
+        
     ],
     'diana-cruz': [
         { id: 'mock-dc-1', title: 'Fine line rostro femenino', content: 'Fine line de rostro femenino en antebrazo. Líneas sutiles y elegantes.', imageUrl: '/images/tattoos/tattoo-10.jpg', likesCount: 398, commentsCount: 67, createdAt: '2026-01-10T10:00:00Z' },
@@ -242,6 +243,7 @@ export const MOCK_USER_POSTS: Record<string, any[]> = {
     'pablo-gil': [
         { id: 'mock-pg-1', title: 'Tribal brazo geométrico', content: 'Manga tribal con diseño geométrico moderno. Líneas precisas y sombreado.', imageUrl: '/images/tattoos/tattoo-9.jpg', likesCount: 423, commentsCount: 89, createdAt: '2026-02-05T10:00:00Z' },
         { id: 'mock-pg-2', title: 'Maya geométrico', content: 'Diseño maya con patrones geométricos contemporáneos.', imageUrl: '/images/tattoos/tattoo-3.jpg', likesCount: 167, commentsCount: 34, createdAt: '2026-01-15T10:00:00Z' },
+        { id: 'mock-pg-3', title: 'corazon negro y tradicional', content: 'Corazon negro rodeado de estrellas.', imageUrl: '/images/tattoos/tattoo-23.jpg', likesCount: 300, commentsCount: 32, createdAt: '2026-02-01T10:00:00Z' },
     ],
     'camilasanchez': [
         { id: 'mock-cs-1', title: 'Lettering frase completa en espalda', content: 'Frase completa en lettering cursivo en la espalda. Caligrafía personalizada.', imageUrl: '/images/tattoos/tattoo-6.jpg', likesCount: 189, commentsCount: 42, createdAt: '2025-11-25T10:00:00Z' },
@@ -253,8 +255,9 @@ export const MOCK_STUDIO_POSTS: Record<string, any[]> = {
     'ink-master': [
         { id: 'mock-im-1', title: 'Neo tradicional rosa y dagas', content: 'Neo tradicional con rosa, dagas y detalles ornamentales.', imageUrl: '/images/tattoos/tattoo-5.jpg', likesCount: 234, commentsCount: 56, createdAt: '2025-12-20T10:00:00Z' },
         { id: 'mock-im-2', title: 'Neo tradicional reloj y brújula', content: 'Diseño neo tradicional de reloj con brújula y rosas.', imageUrl: '/images/tattoos/tattoo-15.jpg', likesCount: 189, commentsCount: 34, createdAt: '2026-01-15T10:00:00Z' },
-        { id: 'mock-im-3', title: 'Rosa negra neo tradicional', content: 'Rosa negra con hojas ornamentales en estilo neo tradicional.', imageUrl: '/images/tattoos/tattoo-17.jpg', likesCount: 312, commentsCount: 67, createdAt: '2026-02-01T10:00:00Z' },
-    ],
+       { id: 'mock-im-3', title: 'Rosa negra neo tradicional', content: 'Rosa negra con hojas ornamentales en estilo neo tradicional.', imageUrl: '/images/tattoos/tattoo-17.jpg', likesCount: 312, commentsCount: 67, createdAt: '2026-02-01T10:00:00Z' },
+       { id: 'mock-im-4', title: 'Neo tradicional conejo', content: 'conejo de colores con estilo tradicional.', imageUrl: '/images/tattoos/tattoo-22.jpg', likesCount: 40, commentsCount: 20, createdAt: '2026-03-08T11:00:00Z' },
+    ],  
     'black-ink': [
         { id: 'mock-bi-1', title: 'Anime sleeve completo', content: 'Manga completa de anime. Personajes y escenas detalladas.', imageUrl: '/images/tattoos/tattoo-8.jpg', likesCount: 567, commentsCount: 102, createdAt: '2026-01-20T10:00:00Z' },
     ],

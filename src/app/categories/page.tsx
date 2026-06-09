@@ -12,6 +12,7 @@ import { StudioCard } from './components/StudioCard';
 import { getAllPosts, normalizePostsResponse, likePost } from '@/lib/api/posts';
 import { resolveImageUrl } from '@/lib/utils';
 import { CATEGORIES } from '@/lib/categories';
+import { MOCK_FEED_POSTS } from '@/lib/mock-profiles';
 
 const ARTISTS = [
     { name: 'Black Ink Studio', city: 'Bogotá, Colombia', specialty: 'Blackwork y Realismo', rating: 4.9, avatar: 'B', studioId: 'black-ink-studio' },
@@ -47,16 +48,32 @@ const STUDIOS = [
 ];
 
 const VIRAL_POSTS = [
-    { id: '5', image: '/images/tattoos/tattoo-5.jpg', author: 'Ink Master', authorAvatar: 'I', title: 'Neo tradicional rosa y dagas', likes: 234, comments: 56, studioId: 'ink-master' },
-    { id: '6', image: '/images/tattoos/tattoo-6.jpg', author: 'Camila Sánchez', authorAvatar: 'C', title: 'Lettering frase completa en espalda', likes: 189, comments: 42, userId: 'camilasanchez' },
-    { id: '7', image: '/images/tattoos/tattoo-7.jpg', author: 'Luis Rojas', authorAvatar: 'L', title: 'Color realismo ave exótica', likes: 312, comments: 78, userId: 'luis-rojas' },
+    { id: 'mock-feed-1', image: '/images/tattoos/tattoo-5.jpg', author: 'Ink Master', authorAvatar: 'I', title: 'Neo tradicional rosa y dagas', likes: 234, comments: 56, studioId: 'ink-master' },
+    { id: 'mock-feed-2', image: '/images/tattoos/tattoo-6.jpg', author: 'Camila Sánchez', authorAvatar: 'C', title: 'Lettering frase completa en espalda', likes: 189, comments: 42, userId: 'camilasanchez' },
+    { id: 'mock-feed-3', image: '/images/tattoos/tattoo-7.jpg', author: 'Luis Rojas', authorAvatar: 'L', title: 'Color realismo ave exótica', likes: 312, comments: 78, userId: 'luis-rojas' },
 ];
 
 const TOP_LIKED = [
-    { id: '8', image: '/images/tattoos/tattoo-8.jpg', author: 'Black Ink', authorAvatar: 'B', title: 'Anime sleeve completo', likes: 567, comments: 102, studioId: 'black-ink' },
-    { id: '9', image: '/images/tattoos/tattoo-9.jpg', author: 'Pablo Gil', authorAvatar: 'P', title: 'Tribal brazo geométrico', likes: 423, comments: 89, userId: 'pablo-gil' },
-    { id: '10', image: '/images/tattoos/tattoo-10.jpg', author: 'Diana Cruz', authorAvatar: 'D', title: 'Fine line rostro femenino', likes: 398, comments: 67, userId: 'diana-cruz' },
+    { id: 'mock-feed-4', image: '/images/tattoos/tattoo-8.jpg', author: 'Black Ink', authorAvatar: 'B', title: 'Anime sleeve completo', likes: 567, comments: 102, studioId: 'black-ink' },
+    { id: 'mock-feed-5', image: '/images/tattoos/tattoo-9.jpg', author: 'Pablo Gil', authorAvatar: 'P', title: 'Tribal brazo geométrico', likes: 423, comments: 89, userId: 'pablo-gil' },
+    { id: 'mock-feed-6', image: '/images/tattoos/tattoo-10.jpg', author: 'Diana Cruz', authorAvatar: 'D', title: 'Fine line rostro femenino', likes: 398, comments: 67, userId: 'diana-cruz' },
 ];
+
+function normalizeCategory(rawCategory: any): { name: string } | undefined {
+    if (typeof rawCategory === 'string') {
+        try {
+            const parsed = JSON.parse(rawCategory);
+            if (parsed && typeof parsed === 'object' && parsed.name) {
+                return { name: String(parsed.name) };
+            }
+        } catch {}
+        return { name: rawCategory };
+    }
+    if (rawCategory && typeof rawCategory === 'object' && 'name' in rawCategory) {
+        return { name: String(rawCategory.name) };
+    }
+    return undefined;
+}
 
 export default function CategoriesPage() {
     const [activeCategory, setActiveCategory] = useState('Todas');
@@ -71,15 +88,51 @@ export default function CategoriesPage() {
             try {
                 setLoading(true);
                 const token = localStorage.getItem('token');
-                if (!token) return;
+                if (!token) {
+                    setAllPosts(
+                        MOCK_FEED_POSTS.map(p => ({
+                            ...p,
+                            imageUrl: resolveImageUrl(p.imageUrl || ''),
+                            category: typeof p.category === 'string' ? { name: p.category } : p.category,
+                        }))
+                    );
+                    setLoading(false);
+                    return;
+                }
                 const response = await getAllPosts(token);
-                const postsArray = normalizePostsResponse(response).map(p => ({
+                const apiPosts = normalizePostsResponse(response).map(p => {
+                    const rawCategory = p.category;
+                    const normalizedCategory = normalizeCategory(rawCategory);
+                    return {
+                        ...p,
+                        category: normalizedCategory,
+                        imageUrl: resolveImageUrl(p.imageUrl),
+                    };
+                });
+                const mockPosts = MOCK_FEED_POSTS.map(p => ({
                     ...p,
-                    imageUrl: resolveImageUrl(p.imageUrl),
+                    imageUrl: resolveImageUrl(p.imageUrl || ''),
+                    category: typeof p.category === 'string' ? { name: p.category } : p.category,
                 }));
-                setAllPosts(postsArray);
+                const seenIds = new Set(apiPosts.map(p => p.id));
+                const merged = [...apiPosts, ...mockPosts.filter(p => !seenIds.has(p.id))];
+
+                console.log(
+                    `[Categories] API posts: ${apiPosts.length}, ` +
+                    `Mock posts kept: ${merged.length - apiPosts.length}, ` +
+                    `Total merged: ${merged.length}`
+                );
+
+                setAllPosts(merged);
             } catch (err) {
                 console.error('Error fetching posts:', err);
+                setAllPosts(
+                    MOCK_FEED_POSTS.map(p => ({
+                        ...p,
+                        imageUrl: resolveImageUrl(p.imageUrl || ''),
+                        category: typeof p.category === 'string' ? { name: p.category } : p.category,
+                    }))
+                );
             } finally {
                 setLoading(false);
             }

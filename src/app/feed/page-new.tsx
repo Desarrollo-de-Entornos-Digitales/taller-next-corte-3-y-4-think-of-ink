@@ -8,7 +8,8 @@ import { InfoCard } from './ui/InfoCard';
 import { Pencil, Megaphone, MessageCircle, Upload, Heart, Bookmark, Send, ChevronLeft, Trash2, AlertCircle } from 'lucide-react';
 import { getAllPosts, createPost, normalizePostsResponse, likePost, getComments, createComment, deleteComment } from '@/lib/api/posts';
 import { formatDate, resolveImageUrl, PLACEHOLDER_IMAGE } from '@/lib/utils';
-import { MOCK_FEED_POSTS } from '@/lib/mock-profiles';
+import { MOCK_FEED_POSTS, MOCK_USERS, MOCK_STUDIOS, getMockPostsForUser, getMockPostsForStudio } from '@/lib/mock-profiles';
+import { CATEGORIES } from '@/lib/categories';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 10 * 1024 * 1024;
@@ -55,8 +56,13 @@ export default function Feed() {
             const response = await getAllPosts(token);
             const postsArray = normalizePostsResponse(response).map(p => {
                 const resolved = resolveImageUrl(p.imageUrl);
-                if (p.imageUrl) console.log('[Feed-new] imageUrl:', p.imageUrl, '→', resolved);
-                return { ...p, imageUrl: resolved };
+                const rawCategory = p.category;
+                const normalizedCategory = typeof rawCategory === 'string'
+                    ? (() => { try { const parsed = JSON.parse(rawCategory); return parsed?.name ? { name: String(parsed.name) } : { name: rawCategory }; } catch { return { name: rawCategory }; } })()
+                    : rawCategory && typeof rawCategory === 'object' && 'name' in rawCategory
+                        ? { name: String(rawCategory.name) }
+                        : undefined;
+                return { ...p, imageUrl: resolved, category: normalizedCategory };
             });
             setAllPosts(postsArray);
             const liked = new Set<string>();
@@ -411,10 +417,57 @@ export default function Feed() {
                         </div>
 
                         {activeTab === 'siguiendo' && (
-                            <div className="border border-dashed border-gray-300 rounded-lg p-10 text-center mb-6">
-                                <p className="font-bold text-gray-400 uppercase tracking-widest text-xs">
-                                    Funcionalidad disponible próximamente
-                                </p>
+                            <div className="mb-6">
+                                <p className="text-sm font-bold text-gray-500 mb-4">Usuarios que sigues</p>
+                                <div className="flex flex-col gap-4">
+                                    {[
+                                        {
+                                            id: 'camilasanchez',
+                                            name: MOCK_USERS['camilasanchez']?.name || 'Camila Sánchez',
+                                            specialty: MOCK_USERS['camilasanchez']?.profession || 'Especialista en Lettering',
+                                            location: MOCK_USERS['camilasanchez']?.location || '',
+                                            postsCount: getMockPostsForUser('camilasanchez').length,
+                                            href: '/profile/camilasanchez',
+                                            initial: 'C',
+                                            img: '',
+                                        },
+                                        {
+                                            id: 'ink-master',
+                                            name: MOCK_STUDIOS['ink-master']?.name || 'Ink Master Studio',
+                                            specialty: MOCK_STUDIOS['ink-master']?.specialties || 'Neo Tradicional, Blackwork',
+                                            location: MOCK_STUDIOS['ink-master']?.location || '',
+                                            postsCount: getMockPostsForStudio('ink-master').length,
+                                            href: '/studio/ink-master',
+                                            initial: 'I',
+                                            img: MOCK_STUDIOS['ink-master']?.logoUrl || '',
+                                        },
+                                    ].map((item) => (
+                                        <Link key={item.id} href={item.href} className="border border-gray-200 rounded-lg p-5 bg-white hover:border-black transition-colors group">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-14 h-14 rounded-full bg-[#E5D9F2] flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                                    {item.img ? (
+                                                        <img src={resolveImageUrl(item.img)} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="text-xl font-bold text-[#6000FF]">{item.initial}</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-bold text-sm truncate group-hover:underline">{item.name}</p>
+                                                    <p className="text-xs text-gray-500 truncate">{item.specialty}</p>
+                                                    <div className="flex items-center gap-3 mt-1">
+                                                        {item.location && (
+                                                            <span className="text-[11px] text-gray-400 font-medium">{item.location}</span>
+                                                        )}
+                                                        <span className="text-[11px] text-gray-400 font-medium">{item.postsCount} {item.postsCount === 1 ? 'publicación' : 'publicaciones'}</span>
+                                                    </div>
+                                                </div>
+                                                <span className="px-4 py-2 border-2 border-black rounded-md text-xs font-bold text-black hover:bg-black hover:text-white transition-colors flex-shrink-0">
+                                                    Ver perfil
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
@@ -610,11 +663,9 @@ export default function Feed() {
                                             className="w-full px-4 py-2 border-2 border-gray-200 rounded-md focus:border-black focus:outline-none font-medium text-sm bg-white cursor-pointer"
                                         >
                                             <option value="">Selecciona una categoría</option>
-                                            <option value="Tatuaje">Tatuaje</option>
-                                            <option value="Diseño">Diseño</option>
-                                            <option value="Estudio">Estudio</option>
-                                            <option value="Artista">Artista</option>
-                                            <option value="Promoción">Promoción</option>
+                                            {CATEGORIES.map((cat) => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
                                         </select>
                                     </div>
 
