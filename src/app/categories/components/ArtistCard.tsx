@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Star } from 'lucide-react';
+import { resolveImageUrl } from '@/lib/utils';
 
 interface ArtistCardProps {
     name: string;
@@ -9,19 +10,24 @@ interface ArtistCardProps {
     specialty: string;
     rating: number;
     avatar: string;
+    logoUrl?: string;
     userId?: string;
     studioId?: string;
 }
 
-export const ArtistCard = ({ name, city, specialty, rating, avatar, userId, studioId }: ArtistCardProps) => {
+export const ArtistCard = ({ name, city, specialty, rating, avatar, logoUrl, userId, studioId }: ArtistCardProps) => {
     const linkHref = studioId ? `/studio/${studioId}` : userId ? `/profile/${userId}` : '';
     const Wrapper = linkHref ? Link : 'div';
     const wrapperProps = linkHref ? { href: linkHref, className: 'border border-[#D9D9D9] rounded-lg p-4 bg-white hover:border-black transition-colors flex items-center gap-4' } as any
         : { className: 'border border-[#D9D9D9] rounded-lg p-4 bg-white hover:border-black transition-colors flex items-center gap-4' };
     return (
         <Wrapper {...wrapperProps}>
-            <div className="w-14 h-14 rounded-full bg-[#E5D9F2] flex items-center justify-center text-lg font-black text-[#6000FF] flex-shrink-0">
-                {avatar}
+            <div className="w-14 h-14 rounded-full bg-[#E5D9F2] flex items-center justify-center text-lg font-black text-[#6000FF] flex-shrink-0 overflow-hidden">
+                {logoUrl ? (
+                    <img src={resolveImageUrl(logoUrl)} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                    avatar
+                )}
             </div>
 
             <div className="flex-1 min-w-0">

@@ -11,7 +11,7 @@ import { InfoCard } from './ui/InfoCard';
 import { getAllPosts, createPost, normalizePostsResponse, likePost, getComments, createComment, deleteComment, deletePost } from '@/lib/api/posts';
 import { formatDate, resolveImageUrl } from '@/lib/utils';
 import { MOCK_USERS, MOCK_STUDIOS, getMockPostsForUser, getMockPostsForStudio } from '@/lib/mock-profiles';
-import { CATEGORIES } from '@/lib/categories';
+import { CATEGORIES, normalizeCategory } from '@/lib/categories';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 10 * 1024 * 1024;
@@ -62,11 +62,7 @@ export default function Feed() {
             const postsArray = normalizePostsResponse(response).map(p => {
                 const resolved = resolveImageUrl(p.imageUrl);
                 const rawCategory = p.category;
-                const normalizedCategory = typeof rawCategory === 'string'
-                    ? (() => { try { const parsed = JSON.parse(rawCategory); return parsed?.name ? { name: String(parsed.name) } : { name: rawCategory }; } catch { return { name: rawCategory }; } })()
-                    : rawCategory && typeof rawCategory === 'object' && 'name' in rawCategory
-                        ? { name: String(rawCategory.name) }
-                        : undefined;
+                const normalizedCategory = normalizeCategory(rawCategory);
                 return { ...p, imageUrl: resolved, category: normalizedCategory };
             });
             setAllPosts(postsArray);

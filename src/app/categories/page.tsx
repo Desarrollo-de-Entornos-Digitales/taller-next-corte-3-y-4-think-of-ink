@@ -11,14 +11,14 @@ import { ArtistCard } from './components/ArtistCard';
 import { StudioCard } from './components/StudioCard';
 import { getAllPosts, normalizePostsResponse, likePost } from '@/lib/api/posts';
 import { resolveImageUrl } from '@/lib/utils';
-import { CATEGORIES } from '@/lib/categories';
+import { CATEGORIES, normalizeCategory } from '@/lib/categories';
 import { MOCK_FEED_POSTS } from '@/lib/mock-profiles';
 
 const ARTISTS = [
-    { name: 'Black Ink Studio', city: 'Bogotá, Colombia', specialty: 'Blackwork y Realismo', rating: 4.9, avatar: 'B', studioId: 'black-ink-studio' },
-    { name: 'Real Ink Tattoo', city: 'Medellín, Colombia', specialty: 'Realismo y Color', rating: 4.8, avatar: 'R', studioId: 'real-ink-tattoo' },
-    { name: 'Fine Line Studio', city: 'Cali, Colombia', specialty: 'Fine Line y Minimalista', rating: 4.7, avatar: 'F', studioId: 'fine-line-studio' },
-    { name: 'Neo Ink Art', city: 'Barranquilla, Colombia', specialty: 'Neo Tradicional', rating: 4.9, avatar: 'N', studioId: 'neo-art-studio' },
+    { name: 'Black Ink Studio', city: 'Bogotá, Colombia', specialty: 'Blackwork y Realismo', rating: 4.9, avatar: 'B', logoUrl: '/images/logos/blackwork-studio.png', studioId: 'black-ink-studio' },
+    { name: 'Real Ink Tattoo', city: 'Medellín, Colombia', specialty: 'Realismo y Color', rating: 4.8, avatar: 'R', logoUrl: '/images/logos/real-ink-tattoo.png', studioId: 'real-ink-tattoo' },
+    { name: 'Fine Line Studio', city: 'Cali, Colombia', specialty: 'Fine Line y Minimalista', rating: 4.7, avatar: 'F', logoUrl: '/images/logos/fine-line-studio.png', studioId: 'fine-line-studio' },
+    { name: 'Neo Ink Art', city: 'Barranquilla, Colombia', specialty: 'Neo Tradicional', rating: 4.9, avatar: 'N', logoUrl: '/images/logos/neo-art-studio.png', studioId: 'neo-art-studio' },
 ];
 
 const LOGO_MAP: Record<string, string> = {
@@ -58,22 +58,6 @@ const TOP_LIKED = [
     { id: 'mock-feed-5', image: '/images/tattoos/tattoo-9.jpg', author: 'Pablo Gil', authorAvatar: 'P', title: 'Tribal brazo geométrico', likes: 423, comments: 89, userId: 'pablo-gil' },
     { id: 'mock-feed-6', image: '/images/tattoos/tattoo-10.jpg', author: 'Diana Cruz', authorAvatar: 'D', title: 'Fine line rostro femenino', likes: 398, comments: 67, userId: 'diana-cruz' },
 ];
-
-function normalizeCategory(rawCategory: any): { name: string } | undefined {
-    if (typeof rawCategory === 'string') {
-        try {
-            const parsed = JSON.parse(rawCategory);
-            if (parsed && typeof parsed === 'object' && parsed.name) {
-                return { name: String(parsed.name) };
-            }
-        } catch {}
-        return { name: rawCategory };
-    }
-    if (rawCategory && typeof rawCategory === 'object' && 'name' in rawCategory) {
-        return { name: String(rawCategory.name) };
-    }
-    return undefined;
-}
 
 export default function CategoriesPage() {
     const [activeCategory, setActiveCategory] = useState('Todas');
@@ -365,6 +349,7 @@ export default function CategoriesPage() {
                                             specialty={artist.specialty}
                                             rating={artist.rating}
                                             avatar={artist.avatar}
+                                            logoUrl={artist.logoUrl}
                                             studioId={artist.studioId || undefined}
                                         />
                                     ))}
